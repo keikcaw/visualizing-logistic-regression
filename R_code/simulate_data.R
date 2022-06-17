@@ -6,7 +6,7 @@ parameters = list(intercept = 1.4, mac = 0, glasses = 0.3, pet.typedog = -0.1,
                   pet.typecat = 0.2, pet.typefish = 0.8,
                   favorite.colorred = 0, favorite.colorgreen = -0.3,
                   favorite.colororange = -0.1, cs.prior.gpa = 1,
-                  cs.height = -0.2, tutoring = 0.16)
+                  cs.height = -0.2, tutoring = 0.17)
 
 df = data.frame(id = 1:n.students) %>%
   mutate(mac = runif(n()) < 0.3,
