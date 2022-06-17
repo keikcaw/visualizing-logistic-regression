@@ -9,6 +9,6 @@ df = read.csv("data/course_outcomes.csv", header = T, stringsAsFactors = F) %>%
 
 # Fit the model.
 pass.m = glm(passed ~ mac + glasses + pet.type + favorite.color + cs.prior.gpa +
-               cs.height,
+               cs.height + tutoring,
              data = df, family = binomial(link = "logit"))
 summary(pass.m)
