@@ -1,5 +1,6 @@
 # Plot probability of passing relative to "baseline" probability (with
-# confidence intervals).
+# confidence intervals).  Note that these probability estimates ignore the
+# uncertainty in the estimate of the intercept.
 coefs.df %>%
   filter(parameter != "(Intercept)") %>%
   mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
