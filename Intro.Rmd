@@ -1,0 +1,49 @@
+---
+title: "Visualizing logistic regression results for non-technical audiences"
+author: "Abby Kaplan and Keiko Cawley"
+date: "9/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+```
+
+
+
+## Introduction: Just tell me "the" effect
+
+Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. The crux of the issue is due to the non-linear nature of the logistic regression curve.
+
+To review, the formula for the logistic regression model is the following: 
+
+$$
+p =\frac{exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}{1 + exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}
+$$
+In the equation *p* is the probability, each of the $\beta$ coefficients represents some increase or decrease on the logistic regression curve, and each of the X~i~s are either ones or zeros which act like switches to turn the $\beta$s on or off. 
+
+
+If we graph the logistic regression equation we get a sigmoid shaped curve:
+
+```{r, echo = F, message = F}
+
+curve <- function(x) (exp(x)/(1+(exp(x))))
+
+set.seed(1500)
+ggplot(data = data.frame(x=rnorm(10000)), mapping = aes(x = x)) +
+    stat_function(fun = curve, color = "#009DD8") +
+    ylim(0,1)+
+    xlim(-10,10) + 
+    theme(axis.ticks.x = element_blank()) +
+    ylab('probability (p)') +
+    xlab(label = expression(x~'='~beta[0] + beta[1]~X[1]~'+'~'... +'~beta[n]~X[n]))
+
+```
+
+The difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5, the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5, the difference is large. Ultimately, what the slope indicates is that the probability is not constant, that is, **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
+
+
+
