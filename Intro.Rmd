@@ -25,7 +25,6 @@ p =\frac{exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}{1 + exp(\beta_0 + \beta_1
 $$
 In the equation *p* is the probability, each of the $\beta$ coefficients represents some increase or decrease on the logistic regression curve, and each of the X~i~s are either ones or zeros which act like switches to turn the $\beta$s on or off. 
 
-
 If we graph the logistic regression equation we get a sigmoid shaped curve:
 
 ```{r, echo = F, message = F}
@@ -39,11 +38,18 @@ ggplot(data = data.frame(x=rnorm(10000)), mapping = aes(x = x)) +
     xlim(-10,10) + 
     theme(axis.ticks.x = element_blank()) +
     ylab('probability (p)') +
-    xlab(label = expression(x~'='~beta[0] + beta[1]~X[1]~'+'~'... +'~beta[n]~X[n]))
+    xlab(label = expression(Z~'='~beta[0] + beta[1]~X[1]~'+'~'... +'~beta[n]~X[n]))
 
 ```
 
-The difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5, the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5, the difference is large. Ultimately, what the slope indicates is that the probability is not constant, that is, **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
+Two characteristics of the logistic regression's results which make the magnitude of effect difficult to convey are:
+
+1. Where a point is on the curve above depends on what combinations of $\beta$s were "switched on" by the X~i~s. 
+2. The slope of the curve is not constant: A one unit increase for different values of Z can result in vastly different probabilities *p*. Notice that the difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5, the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5, the difference is large. 
+
+Due to the probability being (1) contingent on which $\beta$ parameters and (2) due to the non-constant slope means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
+
+
 
 
 
