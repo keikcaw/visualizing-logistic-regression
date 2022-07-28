@@ -2,30 +2,43 @@
 title: "Visualizing logistic regression results for non-technical audiences"
 author: "Abby Kaplan and Keiko Cawley"
 date: "9/20/2022"
-output: html_document
+output: 
+    html_document:
+            code_folding: hide
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(plyr)
 library(dplyr)
 library(ggplot2)
+library(tidyverse)
+library(lme4)
+library(logitnorm)
+library(kableExtra)
+library(cowplot)
+library(grid)
+library(gridExtra)
+library(patchwork)
 ```
 
 
 
-## Introduction: Just tell me "the" effect
+### Introduction: Just tell me "the" effect
 
-Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. The crux of the issue is due to the non-linear nature of the logistic regression curve.
+Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. To review, the formula for the logistic regression model is the following: 
 
-To review, the formula for the logistic regression model is the following: 
+$$
+logit = log(\frac{p}{1-p}) = \beta_0 + \beta_1X_1 +...+ \beta_nX_n
+$$
+
+In the equation *p* is the probability, each of the $\beta$ coefficients represents some increase or decrease on the logistic regression curve, and each of the X~i~s are either ones or zeros which act like switches to turn the $\beta$s on or off. This equation tells us that each of the $\beta$s are in the log-odds scale. This is precisely why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability *p*:
+
 
 $$
 p =\frac{exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}{1 + exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}
 $$
-In the equation *p* is the probability, each of the $\beta$ coefficients represents some increase or decrease on the logistic regression curve, and each of the X~i~s are either ones or zeros which act like switches to turn the $\beta$s on or off. 
 
-If we graph the logistic regression equation we get a sigmoid shaped curve:
+If we graph the equation we get a sigmoid shaped curve:
 
 ```{r, echo = F, message = F}
 
@@ -42,14 +55,250 @@ ggplot(data = data.frame(x=rnorm(10000)), mapping = aes(x = x)) +
 
 ```
 
-Two characteristics of the logistic regression's results which make the magnitude of effect difficult to convey are:
+The slope of the curve is not constant: A one unit increase for different values of Z can result in vastly different probabilities *p*. Notice that the difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5 the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5 the difference is large. 
 
-1. Where a point is on the curve above depends on what combinations of $\beta$s were "switched on" by the X~i~s. 
-2. The slope of the curve is not constant: A one unit increase for different values of Z can result in vastly different probabilities *p*. Notice that the difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5, the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5, the difference is large. 
-
-Due to the probability being (1) contingent on which $\beta$ parameters and (2) due to the non-constant slope means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
+Due to the non-linear nature of the curve means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
 
 
 
+### Preliminaries {.tabset .tabset-fade}
+
+#### Load the data
+```{r fit_model, include = F, cache = F}
+knitr::read_chunk("R_code/fit_model.R")
+
+```
 
 
+```{r load-data, class.source = "fold-show"}
+```
+
+
+`course_outcomes.csv` is a simulated dataset that we created. The dataset contains various variables related to students who took Balloon-Animal-Making 201 at University Imaginary. The variables are summarized in the table below. 
+
+```{r dataset_summary_table, echo = F}
+table <- data.frame(
+    Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
+    Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
+    Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
+) 
+table %>%
+    kbl(col.names = gsub("[.]", " ", names(table))) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+```
+
+
+#### Build a model
+We built a logistic regression model to determine what variables are associated with a student passing the Balloon-Animal-Making course.
+
+```{r model, class.source = "fold-show"}
+```
+
+#### Pull out model coefficients
+Pull out the model coefficients and create a dataframe. This dataframe will be used throughout our visualization exploration journey. 
+
+```{r get-coefficients, class.source = "fold-show"}
+```
+
+## {-}
+
+
+
+
+### Less work for the researcher, nebulous in meaning for the audience {.tabset .tabset-fade}
+
+As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is the raw outputs of the predictors estimated by the model. In this section we will review how to create different visuals from the raw outputs of the model and from there adding small adjustments to make the visual more interpretable to a non-technical audience member. 
+
+
+
+#### Log odds
+
+Often times in papers we see a summary of the model's raw outputs in a table. All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a forest plot of the predictors as shown below:
+
+
+```{r log_odds, include = F, cache = F}
+knitr::read_chunk("visual_folder/log_odds.R")
+```
+
+```{r change-in-log-odds}
+```
+
+This plot clearly presents all the predictors used in the model, catalogs which effects are positive, negative, or no effect, and contains confidence intervals to convey the uncertainty in our estimates. However, using the raw outputs of the logistic regression means that magnitude of effect will be in the log-odds scale. What does a change in the log-odds of 0.4 mean? Is the difference between a change in the log-odds of 0.4 and 0.8 big or small? If the scale doesn't mean anything to your audience member then it is your duty as the researcher to either provide an explanation or make an adjustment. Rather than forcing your audience to understand log-odds, the simplest adjustment you could make is to relabel the x-axis:
+
+```{r change-in-log-odds-adjusted-axis}
+```
+
+This visual is exactly the same as the first visual, with the only difference being in the x-axis. Instead of the x-axis being the change in the log-odds, it simply is the chance of passing higher, the same, or lower making the scale more interpretable. **Explain in which situations this visual is appropriate to use**.
+
+However, relabeling the axis this way means that there are bands of different lengths but no unit of measurement to measure the relative effect size between any predictors. Therefore, just like the first graph, your non-technical audience member will still not get a sense of the magnitude of effect in a scale that they can understand. The only information your reader can gain from these graphs is whether there was an effect and if it was positive or negative. This is problematic because say for example, say your stakeholder begins offering tutoring sessions to students in Balloon Animal Making 201 and they want to know if this new intervention is helping students pass the class. The effect of the tutoring intervention could be positive, but the intervention's magnitude of effect could be only a 5% increased chance of passing the class. Your stakeholder may deem that a 5% increase is not a high enough increase to justify funding the tutoring program. 
+
+
+
+
+
+
+#### Odds Ratio
+
+Description and explanation
+
+**Pros**
+
+**Cons**
+
+**When this graph is appropriate**
+
+**When this graph is not appropriate**
+
+
+```{r odds_ratio, include = F, cache = F}
+knitr::read_chunk("visual_folder/odds_ratio_forest_plot.R")
+```
+
+
+```{r odds-ratio, warning = F}
+```
+
+
+```{r odds_ratio_adjusted, include = F}
+knitr::read_chunk("visual_folder/odds.R")
+```
+
+
+```{r odds-ratio-adjusted-axis}
+```
+
+
+### A little more work for the researcher, less nebulous in meaning for the audience{.tabset .tabset-fade}
+
+#### Probability relative to some baseline
+Description and explanation
+
+**Pros**
+
+**Cons**
+
+**When this graph is appropriate**
+
+**When this graph is not appropriate**
+
+```{r probability_baseline, include = F}
+knitr::read_chunk("visual_folder/probability_baseline.R")
+```
+
+```{r probability-relative-to-some-baseline-no-arrows}
+```
+
+
+```{r probability-relative-to-some-baseline-with-arrows}
+```
+
+
+#### Probability relative to some baseline and group
+Description and explanation
+
+**Pros**
+
+**Cons**
+
+**When this graph is appropriate**
+
+**When this graph is not appropriate**
+
+```{r probability_group, include = F}
+knitr::read_chunk("visual_folder/probability_group.R")
+```
+
+
+```{r probability-relative-to-some-baseline-and-group-no-arrows}
+```
+
+
+```{r probability-relative-to-some-baseline-and-group-with-arrows}
+```
+
+
+#### Banana graph
+
+Description and explanation
+
+**Pros**
+  
+**Cons**
+  
+**When this graph is appropriate**
+  
+**When this graph is not appropriate**
+  
+```{r banana_graphs, include = F}
+knitr::read_chunk("visual_folder/banana_graphs.R")
+```
+
+```{r create-banana-graph}
+```
+
+```{r banana-graph-bare}
+```
+
+```{r banana-graph-multiple}
+```
+
+```{r banana-graph-annotated, fig.width = 9, fig.height = 9}
+```
+
+
+### More work for the researcher, clearer for the audience {.tabset .tabset-fade}
+
+#### Conterfactual Visual V1
+Description and explanation
+
+**Pros**
+  
+**Cons**
+  
+**When this graph is appropriate**
+  
+**When this graph is not appropriate**
+  
+```{r counterfactuals, include = F}
+knitr::read_chunk("visual_folder/counterfactuals.R")
+```
+
+```{r counterfactual-visual-one}
+```
+
+
+#### Counterfactual Visual V2
+
+Description and explanation
+
+**Pros**
+  
+**Cons**
+  
+**When this graph is appropriate**
+  
+**When this graph is not appropriate**
+  
+```{r counterfactual-visual-two}
+```
+
+
+#### Counterfactual Visual V3
+
+Description and explanation
+
+**Pros**
+  
+**Cons**
+  
+**When this graph is appropriate**
+  
+**When this graph is not appropriate**
+  
+```{r counterfactual-visual-three}
+```
+
+
+### Concluding Remarks
+
+If your work and models cannot be understood by the stakeholders for whom you probably built the models for then, put simply, what was the point of all your work? 
