@@ -1,5 +1,8 @@
 # ---------------------------- Banana Graph ------------------------------------
+library(patchwork)
+library(logitnorm)
 
+## ---- create-banana-graph ----
 # Function that creates a banana graph.  It assumes that the coefficients of the
 # model are stored in an object called `coefs.df`.  The argument is a string
 # that identifies the predictor of interest.
@@ -37,29 +40,11 @@ create.banana.graph <- function(predictor) {
     theme_bw()
 }
 
-# ---- tutoring
-create.banana.graph("tutoringTRUE")
+## ---- banana-graph-bare ----
+# create a banana graph for students who own a pet fish
+pet.fish = create.banana.graph("pet.typefish")
 
-# ---- pet type
-pet.fish <- create.banana.graph("pet.typefish")
-pet.dog <- create.banana.graph("pet.typedog")
-pet.cat <- create.banana.graph("pet.typecat")
-
-# --- mac/glasses
-create.banana.graph("macTRUE")
-create.banana.graph("glassesTRUE")
-
-
-# --- colors
-create.banana.graph("favorite.colorred")
-create.banana.graph("favorite.colororange")
-create.banana.graph("favorite.colorgreen")
-
-
-
-
-#-----------------------Banana Graph figure sketches ---------------------------
-###### To show that we can aid in the interpretation of the graph by annotating
+## ---- banana-graph-annotated ----
 pet.fish +
   annotate("segment", x = 0.4, xend = 0.4, y = 0.4,
            yend = invlogit(logit(0.4) +
@@ -69,20 +54,15 @@ pet.fish +
   annotate("text", x = 0.1, y = 0.55, size = 2.90, hjust = 0,
            label = str_wrap(paste("Some student who does not own a pet fish has a 40% chance of passing (x-axis value).",
                                   " However, if that same student did own a pet fish,",
-                                  " their predicted probability of passing would be",
+                                  " their predicted probability of passing would be ",
                                   round(invlogit(logit(0.4) +
                                                    coefs.df$est[coefs.df$parameter == "pet.typefish"]) * 100),
                                   "% (y-axis value).",
                                   sep = ""),
                             60))
 
-
-
-####### To show that showing many of these can get overwhelming on the eyes
-library(patchwork)
-pet.fish + pet.dog + pet.cat
-
-####### Show that we can lighten the load by adding common axes
+#-----------------------Banana Graph figure sketches ---------------------------
+## ---- banana-graph-multiple ----
 expand.grid(x = seq(0.01, 0.99, 0.01),
             pet = c("fish", "dog", "cat")) %>%
   mutate(pet = paste("pet.type", pet, sep = ""),
@@ -114,3 +94,7 @@ expand.grid(x = seq(0.01, 0.99, 0.01),
        title = "Estimated relationship to probability of passing") +
   facet_wrap(~ pretty.parameter) +
   theme_bw()
+
+## ---- banana-graph-less-polished ----
+library(patchwork)
+pet.fish + pet.dog + pet.cat

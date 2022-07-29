@@ -1,3 +1,4 @@
+## ---- probability-relative-to-some-baseline-no-arrows ----
 # Plot probability of passing relative to "baseline" probability (with
 # confidence intervals).  Note that these probability estimates ignore the
 # uncertainty in the estimate of the intercept.
@@ -28,6 +29,7 @@ coefs.df %>%
   coord_flip() +
   theme_bw()
 
+## ---- probability-relative-to-some-baseline-with-arrows ----
 # Plot probability of passing relative to "baseline" probability (with arrows).
 coefs.df %>%
   filter(parameter != "(Intercept)") %>%

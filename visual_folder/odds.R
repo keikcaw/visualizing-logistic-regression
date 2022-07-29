@@ -1,3 +1,4 @@
+## ---- odds-ratio-adjusted-axis ----
 # Plot the exponentiated coefficients (% change in odds ratio).
 coefs.df %>%
   filter(parameter != "(Intercept)") %>%

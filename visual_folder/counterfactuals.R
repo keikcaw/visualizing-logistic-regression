@@ -1,3 +1,4 @@
+## ---- counterfactual-visual-one ----
 # Plot the predicted number of extra "passes" among students who got tutoring,
 # relative to the number we think would have passed if they hadn't gotten
 # tutoring.  Account for uncertainty both in the parameter estimates and in the
@@ -25,6 +26,8 @@ with(
   }
 )
 
+
+## ---- counterfactual-visual-two ----
 # Plot the predicted number of extra "passes" among students who got tutoring,
 # relative to the number we think would have passed if they hadn't gotten
 # tutoring, by group.  Account for uncertainty both in the parameter estimates
@@ -72,6 +75,7 @@ with(
   }
 )
 
+## ---- counterfactual-visual-three ----
 # Plot the predicted number of "passes" among students who DIDN'T get tutoring,
 # compared to the number we think would have passed if they HAD gotten tutoring,
 # by group.  Account for uncertainty both in the parameter estimates and in the
