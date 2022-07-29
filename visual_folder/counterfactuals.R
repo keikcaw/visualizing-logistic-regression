@@ -109,7 +109,7 @@ with(
       geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1) +
       geom_linerange(aes(ymin = lower.50, ymax = upper.50), size = 2) +
       geom_point(aes(y = n.passed), size = 3) +
-      scale_color_manual(values = c("brown3", "black")) +
+      scale_color_manual(values = c("red", "black")) +
       scale_shape_manual(values = c(18, 16)) +
       guides(color = guide_legend(override.aes = list(linetype = 0)),
              shape = guide_legend(override.aes = list(linetype = 0))) +

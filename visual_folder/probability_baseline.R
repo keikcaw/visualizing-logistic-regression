@@ -22,7 +22,7 @@ coefs.df %>%
   geom_hline(yintercept = invlogit(coefs.df$est[coefs.df$parameter == "(Intercept)"])) +
   scale_y_continuous(limits = c(0, 1), labels = scales::percent_format()) +
   scale_color_manual("Relationship to\nprobability of passing",
-                     values = c("chartreuse3", "gray", "brown3")) +
+                     values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "Probability of passing",
        title = "Estimated relationships between student characteristics and probability of passing") +
   coord_flip() +
@@ -47,7 +47,7 @@ coefs.df %>%
   geom_vline(xintercept = invlogit(coefs.df$est[coefs.df$parameter == "(Intercept)"])) +
   scale_x_continuous(limits = c(0, 1), labels = scales::percent_format()) +
   scale_color_manual("Relationship to\nprobability of passing",
-                     values = c("chartreuse3", "gray", "brown3")) +
+                     values = c(good.color, neutral.color, bad.color)) +
   labs(x = "Probability of passing", y = "",
        title = "Estimated relationships between student characteristics and probability of passing") +
   theme_bw()

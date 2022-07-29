@@ -17,7 +17,7 @@ coefs.df %>%
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 0) +
   scale_color_manual("Relationship to\nlog odds of passing",
-                     values = c("chartreuse3", "gray", "brown3")) +
+                     values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "Change in log odds",
        title = "Estimated relationships between student characteristics and log odds of passing") +
   coord_flip() +
@@ -45,7 +45,7 @@ coefs.df %>%
   scale_y_continuous(breaks = c(-1, 0, 1),
                      labels = c("← Lower", "Same", "Higher →")) +
   scale_color_manual("Relationship to\nchance of passing",
-                     values = c("chartreuse3", "gray", "brown3")) +
+                     values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "Chance of passing",
        title = "Estimated relationships between student characteristics and chance of passing") +
   coord_flip() +
