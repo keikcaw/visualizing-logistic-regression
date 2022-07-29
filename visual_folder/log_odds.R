@@ -1,3 +1,4 @@
+## ---- change-in-log-odds ----
 # Plot the coefficients (change in log odds).
 coefs.df %>%
   filter(parameter != "(Intercept)") %>%
@@ -23,6 +24,7 @@ coefs.df %>%
   coord_flip() +
   theme_bw()
 
+# ---- change-in-log-odds-adjusted-axis ----
 # Plot the coefficients (change in log odds), but hide the numbers on the
 # x-axis.
 coefs.df %>%

@@ -1,3 +1,4 @@
+## ---- probability-relative-to-some-baseline-and-group-no-arrows ----
 # Plot probability of passing relative to "baseline" probability for several
 # groups (with confidence intervals).  Note that these probability estimates
 # ignore the uncertainty in the estimates of the intercept and the group
@@ -42,6 +43,7 @@ expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
   theme_bw() +
   theme(legend.pos = "bottom")
 
+## ---- probability-relative-to-some-baseline-and-group-with-arrows ----
 # Plot probability of passing relative to "baseline" probability for several
 # groups (with arrows).
 expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
