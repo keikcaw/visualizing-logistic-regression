@@ -20,7 +20,7 @@ coefs.df %>%
   geom_hline(yintercept = 1) +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_color_manual("Relationship to\nodds ratio of passing",
-                     values = c("chartreuse3", "gray", "brown3")) +
+                     values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "% change in odds ratio",
        title = "Estimated relationships between student characteristics and odds ratio of passing") +
   coord_flip() +

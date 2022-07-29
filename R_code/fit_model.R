@@ -32,7 +32,15 @@ coefs.df = summary(pass.m)$coefficients %>%
                                         paste("Favorite color:",
                                               str_to_title(gsub("favorite\\.color",
                                                                 "", parameter))),
-                                      parameter == "cs.prior.gpa" ~ "Prior GPA",
-                                      parameter == "cs.height" ~ "Height")) %>%
+                                      parameter == "cs.prior.gpa" ~ paste("Prior GPA\n(",
+                                                                          round(sd(df$prior.gpa),
+                                                                                1),
+                                                                          "-pt increase)",
+                                                                          sep = ""),
+                                      parameter == "cs.height" ~ paste("Height\n(",
+                                                                       round(sd(df$height),
+                                                                             1),
+                                                                       "-in increase)",
+                                                                       sep = ""))) %>%
   dplyr::select(parameter, pretty.parameter, est = Estimate, se = Std..Error,
                 z = z.value, p = Pr...z..)
