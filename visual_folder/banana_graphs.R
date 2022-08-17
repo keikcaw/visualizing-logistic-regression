@@ -43,6 +43,7 @@ create.banana.graph <- function(predictor) {
 ## ---- banana-graph-bare ----
 # create a banana graph for students who own a pet fish
 pet.fish = create.banana.graph("pet.typefish")
+pet.fish
 
 ## ---- banana-graph-annotated ----
 pet.fish +
