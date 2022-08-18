@@ -3,13 +3,13 @@ title: "Visualizing logistic regression results for non-technical audiences"
 author: "Abby Kaplan and Keiko Cawley"
 date: "9/20/2022"
 output: 
-    html_document:
-            code_folding: hide
-            toc: true
-            toc_float: true
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
 ---
 
-```{r setup, include=FALSE, warning = FALSE}
+```{r setup, include = F, warning = F}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
@@ -24,6 +24,7 @@ library(patchwork)
 
 source("visual_folder/colors.R",local = knitr::knit_global())
 
+theme_set(theme_bw())
 ```
 
 
@@ -34,37 +35,51 @@ source("visual_folder/colors.R",local = knitr::knit_global())
 Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. To review, the formula for the logistic regression model is the following: 
 
 $$
-logit = log(\frac{p}{1-p}) = \beta_0 + \beta_1X_1 +...+ \beta_nX_n
+\mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1-p}\end{array}\right) = \beta_0 + \beta_1X_1 + \ldots + \beta_nX_n
 $$
 
-In the equation *p* is the probability, each of the $\beta$ coefficients represents some increase or decrease on the logistic regression curve, and each of the X~i~s are either ones or zeros which act like switches to turn the $\beta$s on or off. This equation tells us that each of the $\beta$s are in the log-odds scale. This is precisely one of the reasons why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability *p*:
-
+In the equation _p_ is the probability of the outcome, each of the *X~i~*s is a variable we are using to predict the outcome, and each of the _β_ coefficients represents some increase or decrease on the logistic regression curve associated with that variable. This equation tells us that each of the *β*s are in the log-odds scale. This is precisely one of the reasons why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability _p_:
 
 $$
-p =\frac{exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}{1 + exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}
+\begin{aligned}
+p & = \mbox{logit}^{-1}(\beta_0 + \beta_1X_1 + \ldots + \beta_nX_n) \\ & \\
+& = \frac{e^{\beta_0 + \beta_1X_1 + \ldots + \beta_nX_n}}{1 + e^{\beta_0 + \beta_1X_1 + \ldots + \beta_nX_n}}
+\end{aligned}
 $$
 
-If we graph the equation we get a sigmoid shaped curve:
+If we graph the equation we get a sigmoid-shaped curve:
 
-```{r, echo = F, message = F}
+```{r, echo = F, message = F, fig.height = 4, fig.width = 5, fig.align = "center"}
 
 curve <- function(x) (exp(x)/(1+(exp(x))))
 
 set.seed(1500)
-ggplot(data = data.frame(x=rnorm(10000)), mapping = aes(x = x)) +
-    stat_function(fun = curve, color = "#009DD8") +
-    ylim(0,1)+
-    xlim(-10,10) + 
-    theme(axis.ticks.x = element_blank()) +
-    ylab('probability (p)') +
-    xlab(label = expression(Z~'='~beta[0] + beta[1]~X[1]~'+'~'... +'~beta[n]~X[n]))
+ggplot() +
+  stat_function(fun = curve, color = "#009DD8") +
+  annotate("segment", x = -3, xend = -2, y = invlogit(-3), yend = invlogit(-3),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = -2, xend = -2, y = invlogit(-3), yend = invlogit(-2),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = -3.5, y = 0.3,
+           label = str_wrap("A 1-unit change here leads to a small change in probability",
+                            20)) +
+  annotate("segment", x = 0, xend = 1, y = invlogit(0), yend = invlogit(0),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = 1, xend = 1, y = invlogit(0), yend = invlogit(1),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = 3, y = 0.6,
+           label = str_wrap("A 1-unit change here leads to a large change in probability",
+                            20)) +
+  ylim(0, 1) +
+  xlim(-5, 5) + 
+  ylab("probability (p)") +
+  xlab(label = expression(z~'='~beta[0]+beta[1]~X[1]~'+'~'...+'~beta[n]~X[n]))
 
 ```
 
-The slope of the curve is not constant: A one unit increase for different values of Z can result in vastly different probabilities *p*. Notice that the difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5 the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5 the difference in probability is large. 
+The slope of the curve is not constant: a one-unit increase for different values of _z_ can result in vastly different probabilities _p_. Where the slope of the curve is relatively flat, for example from _z_ = -5 to _z_ = -2.5, the difference in probability from a one-unit increase is very small. On the other hand, where the slope curve is steep, for example from _z_ = 0 to _z_ = 2.5, the difference in probability from a one-unit increase is large. 
 
-
-Due to the non-linear nature of the curve means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
+Due to the non-linear nature of the curve means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this discussion we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of each option. We will also discuss in which situations you might choose one visualization over another. 
 
 
 
