@@ -119,6 +119,8 @@ We pulled out the model coefficients and created a dataframe. This dataframe wil
 ```{r get-coefficients, class.source = "fold-show"}
 ```
 
+### Disclaimer: causality
+
 # Presenting model coefficients
 
 As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is a plot of the raw outputs of the predictors estimated by the model. In this section we will review visualizations based on the raw coefficients or simple functions thereof.
@@ -254,70 +256,73 @@ In the figure below, you can see that the banana-shaped curve is below the solid
 ```{r banana-graph-bare}
 ```
 
-However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown below). If your audience is unfamiliar with these graphs it can be overwhelming, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph. 
+However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown below). If your audience is unfamiliar with these graphs it can be overwhelming, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph.
 
 ```{r banana-graph-annotated}
 ```
 
-Once you've helped the audience understand one banana graph, you can then go on to present multiple banana graphs, like so:  
+Once you've helped the audience understand one banana graph, you can then go on to present multiple banana graphs, like so:
 
 ```{r banana-graph-multiple}
 ```
 
-These graphs are perfect for showing the whole range of predicted probabilities. However, the downside to these graphs is, if you're planning on showing the effect of multiple variables, they can take up a great deal of real estate on your report. The banana graphs require one graph per predictor variable. In the case that you must present the effect of many predictor variables, you may overwhelm your audience by the sheer volume of graphs. Additionally, the forest plots in the previous examples could show all the predictors and their effect size in one graph, which means one can easily compare values between any two predictors in one forest plot graph. However, with the banana graphs, you audience's eyes have to dart from one graph to the next to compare any two predictor variables. Another limitation to this visual is that, if it is your audience's first time seeing these banana graphs, then it may be difficult for them to understand. Although we discussed a design layout to overcome this issue, it is still important to think about whether there is a better visual which does not require you to go to certain lengths to explain what the graph is trying to convey. 
+These graphs are perfect for showing the whole range of predicted probabilities. However, the downside to these graphs is, if you're planning on showing the effect of multiple variables, they can take up a great deal of real estate on your report. The banana graphs require one graph per predictor variable. In the case that you must present the effect of many predictor variables, you may overwhelm your audience by the sheer volume of graphs. Additionally, the forest plots in the previous examples could show all the predictors and their effect size in one graph, which means one can easily compare values between any two predictors in one forest plot graph. However, with the banana graphs, you audience's eyes have to dart from one graph to the next to compare any two predictor variables. Another limitation to this visual is that, if it is your audience's first time seeing these banana graphs, then it may be difficult for them to understand. Although we discussed a design layout to overcome this issue, it is still important to think about whether there is a better visual which does not require you to go to certain lengths to explain what the graph is trying to convey.
 
-# Presenting counterfactuals
+# Presenting counterfactual counts
   
 ```{r counterfactuals, include = F}
 knitr::read_chunk("visual_folder/counterfactuals.R")
 ```
 
-## 4.1 Conterfactual Visual V1
-Description and explanation
+Sometimes stakeholders are interested in a measure that's even more basic than probabilities: the number of times something happens (or doesn't happen).
 
-**Pros**
-  
-**Cons**
-  
-**When this graph is appropriate**
-  
-**When this graph is not appropriate**
+For example, suppose your stakeholders want to use your analysis to assess the impact of tutoring on pass rates in Balloon Animal-Making 201. Since the tutoring program costs money, they're interested not just in _whether_ tutoring helps students, but _how much_ it helps them. In other words, is the program worth it, or could the money be used more effectively elsewhere? A very direct way to assess the real-world impact of the program is to estimate a literal count: the number of extra students who passed because of tutoring.
 
-```{r counterfactual-visual-one}
+### Extra successes
+
+Here's one way to approach this idea. In our dataset, `r format(sum(df$tutoring), big.mark = ",")` students received tutoring; of those, `r format(sum(df$tutoring & df$passed), big.mark = ",")` passed the class. Suppose those students had _not_ received tutoring; in that case, how many students do we think would have passed? In other words, how many "extra" passes did we get because of tutoring?
+
+We can get a simple point estimate by using our model to predict outcomes for the subset of our data where students received tutoring, but with the `tutoring` predictor set to `FALSE` instead of `TRUE` -- in other words, by running a set of counterfactual predictions. But a point estimate doesn't convey the amount of uncertainty around our estimate; we can get confidence intervals by simulating many sets of outcomes and aggregating over them, as follows:
+
+1. Take all observations in the dataset for students who received tutoring.
+2. Set the value of the `tutoring` predictor to `FALSE` for all students.
+2. For each of (1,000, or some other suitably large number) simulations:
+    1. **Account for uncertainty in parameter estimates:** Sample a value for each parameter in the model. We took a sample from the normal distribution with its mean set to the estimated parameter value and its standard deviation set to the standard error.
+    2. Compute the predicted probability of passing for each student using these parameter values.
+    2. **Account for uncertainty in outcomes:** Randomly assign each prediction to "pass" or "fail", weighted by the predicted probability of passing.
+    2. Sum the total number of students predicted to pass. Subtract this total from the number of students who actually passed. This is the predicted number of "extra" passes.
+2. Summarize the distribution of predicted number of extra passing students over all the simulations.
+
+The histogram below shows the results of 1,000 simulations like this for our dataset. Our model estimates that tutoring did indeed increase the number of students who passed -- probably by somewhere around 60-90 students.
+
+```{r extra-passes, message = F}
 ```
 
+If your stakeholders care about the magnitude of an effect in terms of counts, this approach is clear and straightforward; it directly answers the question stakeholders are asking. Its primary drawback is that, even more than other visualizations we've explored, it strongly implies a causal relationship between the predictor and the outcome: we're claiming that the tutoring _caused_ some students to pass who otherwise wouldn't have. Moreover, this approach assumes that the counterfactual makes sense. This is fine for the tutoring predictor; it's reasonable to ask what would have happened if a student hadn't gone to tutoring. But it makes much less sense for other predictors; for example, what does it mean to ask what would have happened if a student's favorite color were red instead of blue?
 
-## 4.2 Counterfactual Visual V2
+Using a histogram to summarize the simulations may not be the best choice if your audience is likely to be distracted by the whole idea of using simulation to estimate uncertainty. The meaning of the y-axis isn't straightforward and will require some explanation.
 
-Description and explanation
+### Extra successes by group
 
-**Pros**
-  
-**Cons**
-  
-**When this graph is appropriate**
-  
-**When this graph is not appropriate**
-  
-```{r counterfactual-visual-two}
+Just as we did with the probability-based approaches above, we can summarize counterfactuals by group for a more fine-grained view of our model's predictions. The following graph shows the number of extra passing students by pet type. To save space, we've flattened the histograms into a caterpillar plot; this has the additional advantage of avoiding a scale that shows the number of simulations, and instead focusing on the range of predictions (which is what we wanted in the first place).
+
+```{r extra-passes-by-group}
 ```
 
+Splitting up the estimates by group has advantages similar to the ones described above for presenting probabilities by group: it shows how the effect varies by group, and if our model had relevant interactions, we would be able to include those.
 
-## 4.3 Counterfactual Visual V3
+It's worth emphasizing that the _kinds_ of differences we see here are different from those we saw in the probability graphs. For example, recall that we saw that tutoring gives a larger percentage point boost to students with fish, because those students started out with a lower baseline probability of passing. But this graph shows that the absolute _number_ of extra passing students with fish is _smaller_ than for other groups; this is because there simply aren't that many students with fish in the first place. Your context will determine which kind of effect is most relevant. Do your stakeholders want to know absolute numbers, so that they can avoid spending resources that won't actually benefit many people? Or do they want to understand whether a particular intervention disproportionately benefits (or harms) certain groups, even if those groups are small?
 
-Description and explanation
+### Potential successes compared to group size
 
-**Pros**
-  
-**Cons**
-  
-**When this graph is appropriate**
-  
-**When this graph is not appropriate**
-  
-```{r counterfactual-visual-three}
+There's an alternative way to present counterfactuals that attempts to show _both_ the effect size for each group _and_ the overall size of that group. For this example, we'll switch the direction of the counterfactual: instead of predicting how many tutored students passed who otherwise wouldn't have, we're going to predict how many _untutored_ students _would have_ passed if they had received tutoring. (Again, we're making a strong causal claim, which may not be appropriate for your model!)
+
+The graph below shows, for each pet type, the number of untutored students with that kind of pet who _actually_ passed the class (red diamonds). It also shows the estimated number of untutored students who _would have_ passed if they had received tutoring (black dots and lines). We can see clearly that our model predicts a benefit from tutoring for all students except dog owners; it also makes clear that the groups have substantially different sizes.
+
+```{r potential-passes-by-group, warning = F}
 ```
 
+This approach is a step towards acknowledging different group sizes, and it also helps put the absolute numbers in context. (50 extra passes is extremely impressive if the baseline was 50, but less so if the baseline was 10,000.) But note that it doesn't convey the size of the _whole_ group, only of the number of passing students in the group. For example, the graph doesn't explain whether the number of passing students with fish is small because there aren't many of them in the first place, or because fish owners are more likely to fail. (In this case it's both, but that won't always be true.) In addition, if you have groups of vastly unequal sizes, then the effects for smaller groups will be squashed at the bottom of the scale and difficult to see.
 
 # Concluding Remarks
 
