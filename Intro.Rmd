@@ -32,18 +32,18 @@ theme_set(theme_bw())
 
 # Introduction: Just tell me "the" effect
 
-Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. To review, the formula for the logistic regression model is the following: 
+Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much.  When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward.To review, the formula for the logistic regression model is the following: 
 
 $$
-\mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1-p}\end{array}\right) = \beta_0 + \beta_1X_1 + \ldots + \beta_nX_n
+\mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
 $$
 
-In the equation _p_ is the probability of the outcome, each of the *X~i~*s is a variable we are using to predict the outcome, and each of the _β_ coefficients represents some increase or decrease on the logistic regression curve associated with that variable. This equation tells us that each of the *β*s are in the log-odds scale. This is precisely one of the reasons why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability _p_:
+In the equation _p_ is the probability of the outcome, each of the *x~i~*s is a variable we are using to predict the outcome, and each of the _β_ coefficients represents some increase or decrease on the logistic regression curve associated with that variable. This equation tells us that each of the *β*s are in the log-odds scale. This is precisely one of the reasons why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability _p_:
 
 $$
 \begin{aligned}
-p & = \mbox{logit}^{-1}(\beta_0 + \beta_1X_1 + \ldots + \beta_nX_n) \\ & \\
-& = \frac{e^{\beta_0 + \beta_1X_1 + \ldots + \beta_nX_n}}{1 + e^{\beta_0 + \beta_1X_1 + \ldots + \beta_nX_n}}
+p & = \mbox{logit}^{-1}(\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n) \\ & \\
+& = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}
 \end{aligned}
 $$
 
@@ -98,13 +98,13 @@ The dataset contains the following variables.  The two continuous variables are 
 
 ```{r dataset_summary_table, echo = F}
 table <- data.frame(
-    Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
-    Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
-    Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
+  Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
+  Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
+  Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
 ) 
 table %>%
-    kbl(col.names = gsub("[.]", " ", names(table))) %>%
-    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+  kbl(col.names = gsub("[.]", " ", names(table))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
 ### Model
@@ -119,75 +119,70 @@ We pulled out the model coefficients and created a dataframe. This dataframe wil
 ```{r get-coefficients, class.source = "fold-show"}
 ```
 
-# 2 "The" effect is as clear as mud
+# Presenting model coefficients
 
-As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is a plot of the raw outputs of the predictors estimated by the model. In this section we will review how to create different visuals from the raw outputs of the model and from there adding small adjustments to make the visual more interpretable to a non-technical audience member. 
+As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is a plot of the raw outputs of the predictors estimated by the model. In this section we will review visualizations based on the raw coefficients or simple functions thereof.
 
-
-
-## 2.1 Log odds
-
-Often times in papers we see a summary of the model's raw outputs in a table. All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a forest plot of the predictors as shown below:
-
+### Log odds
 
 ```{r log_odds, include = F, cache = F}
 knitr::read_chunk("visual_folder/log_odds.R")
 ```
+
+Oftentimes in papers we see a summary of the model's raw outputs in a table, like this:
+
+```{r coefficient_table, echo = F}
+coefs.df %>%
+  dplyr::select(-parameter) %>%
+  kbl(col.names = c("Parameter", "Estimate", "Standard error", "z", "p")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+```
+
+All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a caterpillar plot of the predictors as shown below:
 
 ```{r change-in-log-odds}
 ```
 
 This plot clearly presents all the predictors used in the model, catalogs which effects are positive, negative, or no effect, and contains confidence intervals to convey the uncertainty in our estimates. Using the raw outputs from the logistic regression means that the magnitude of effect is in the log-odds scale. This visual is perfect for audiences who know exactly what a log-odds is, and problematic for non-technical audiences who do not. The visual can leave your non-technical audience member wondering what a 0.4 change in the log-odds even means. Is the difference between a change in the log-odds of 0.4 and 0.8 big or small?  If the scale doesn't mean anything to your audience member then it is your duty as the researcher to either provide an explanation or make an adjustment. 
 
+### Secret log odds
 
-### Adjustments to enhance the visual
-Rather than trying to have your audience understand log-odds, the simplest adjustment you could make is to relabel the x-axis. This second visual is exactly the same as the fist visual, with the only difference being in the x-axis. Instead of the x-axis being the change in the log-odds, it simply is the chance of passing higher, the same, or lower, making the x-axis scale interpretable. 
+Rather than trying to have your audience understand log-odds, the simplest adjustment you could make is to relabel the x-axis. This second visual is exactly the same as the fist visual, with the only difference being in the x-axis. Instead of the x-axis showing the log-odds scale explicitly, it simply indicates whether the chance of passing is higher, the same, or lower.
 
 ```{r change-in-log-odds-adjusted-axis}
 ```
 
+This graph is perfect if your audience is only interested in knowing which variables (if any) are related to the outcome, and what the sign of each relationship is.  Within limits, it can also show which variables are more strongly related to the outcome than others (depending on how continuous predictors are scaled). However, relabeling the axis this way means that there are bands of different lengths but no unit of measurement to describe their absolute effect size. Therefore, just like the first graph, we run into the same issue: the non-technical audience member still will not get a sense of the overall magnitude of effect. This is problematic because say, for example, your stakeholder asked you to evaluate whether offering tutoring sessions to students in Balloon Animal Making 201 is helping students pass the class. The effect of the tutoring intervention is positive, but this graph doesn't indicate what that means in practical terms: does it increase a student's chance of passing by 5%? 90%? Your stakeholder may deem that a 5% increase is not a high enough increase to justify funding the tutoring program.
 
-### Usage and limitations
-This graph is perfect if your audience is only interested in knowing whether there is an effect and whether some variable is more or less likely to affect the outcome of interest. However, relabeling the axis this way means that there are bands of different lengths but no unit of measurement to describe the relative effect size between any predictors. Therefore, just like the first graph, we run into the same issue: the non-technical audience member still will not get a sense of the magnitude of effect. This is problematic because say, for example, your stakeholder begins offering tutoring sessions to students in Balloon Animal Making 201 and they want to know if this new intervention is helping students pass the class. The effect of the tutoring intervention could be positive, but the intervention's magnitude of effect could only be a 5% increased chance of passing the class for students who are at risk of failing. Your stakeholder may deem that a 5% increase is not a high enough increase to justify funding the tutoring program. 
-
-
-
-
-
-## 2.2 Odds ratio
-
-Description and explanation
-
-**Pros**
-
-**Cons**
-
-**When this graph is appropriate**
-
-**When this graph is not appropriate**
-
+### Odds ratios
 
 ```{r odds_ratio, include = F, cache = F}
-knitr::read_chunk("visual_folder/odds_ratio_forest_plot.R")
-```
-
-
-```{r odds-ratio, warning = F}
-```
-
-
-## 
-
-```{r odds_ratio_adjusted, include = F}
 knitr::read_chunk("visual_folder/odds.R")
 ```
 
+The log-odds scale is hard to interpret directly, but your audience may be more familiar with the "odds" part of log-odds. The quantity $\frac{p}{1 - p}$ is another way of expressing ideas like "3-to-1 odds" or "2-to-5 odds". Can we exponentiate the log-odds to get something more interpretable?
+
+Sort of, but there are two non-trivial obstacles. The first is that your audience is like to be more familiar with odds expressed as integer ratios ("3-to-1" or "2-to-5") rather than "3" or "0.4". Your model is unlikely to produce odds that are rational numbers for small integers, so you'll need to either explain your unusual-looking odds or convert them to approximations (for example, "roughly 1-to-3 odds" for a value of 0.35).
+
+The second, and more serious, problem is that the coefficients of your model (which are probably what your audience cares most about) don't represent odds directly; they represent _changes_ in odds. Each coefficient represents an additive change on the log-odds scale; when we exponentiate to get odds, each coefficient represents a multiplicative change. That is, for each _β~i~_, a one-unit increase in _x~i~_ multiplies the odds of the outcome by _e^β~i~^_. To put it yet another way, the coefficients represent a change in the _odds ratio_.
+
+$$
+\begin{aligned}
+e^{\beta_i} & = \frac{e^{\beta_i}e^{\beta_ix_i}}{e^{\beta_ix_i}} \\ \\
+& = \frac{e^{\beta_ix_i + \beta_i}}{e^{\beta_ix_i}} \\ \\
+& = \frac{e^{\beta_i(x_i + 1)}}{e^{\beta_ix_i}} \\ \\
+& = \frac{e^{\beta_i(x_i + 1)} \cdot e^{beta_0 + \beta_1x_1 + \ldots + \beta_{i - 1}x_{i - 1} + \beta_{i + 1}x_{i + 1} \ldots beta_nx_n}}{e^{\beta_ix_i} \cdot e^{beta_0 + \beta_1x_1 + \ldots + \beta_{i - 1}x_{i - 1} + \beta_{i + 1}x_{i + 1} \ldots beta_nx_n}} \\ \\
+& = \frac{e^{\log(\mbox{odds for } x_i + 1)}}{e^{\log(\mbox{odds for } x_i)}} \\ \\
+& = \frac{\mbox{odds for } x_i + 1}{\mbox{odds for } x_i}
+\end{aligned}
+$$
+
+We can plot exponentiated coefficients just like raw coefficients.
 
 ```{r odds-ratio-adjusted-axis}
 ```
 
-
-
+Changes in odds ratios may be a bit easier to describe for your audience than changes in log-odds. (For example, tripling the odds ratio is like going from 3-to-1 odds to 9-to-1 odds, or from 1-to-3 odds to an even chance.) But we're still pretty far removed from the kinds of scales your audience will be most familiar with, like percentages. Worse, there's a danger that the percent change in log odds might be misinterpreted as the absolute probability of the outcome (or the change in its probability), which is not what these plots represent at all. Finally, when we represent the coefficients as changes in odds ratios, we expand the scale for coefficients with a positive effect and compress it for coefficients with a negative effect. (The odds ratio graph suggests that a `r round(sd(df$prior.gpa), 1)`-point increase in prior GPA has a much larger effect on passing than having a pet fish, while the graph of log-odds suggests that the effects have approximately the same magnitude.)
 
 # 3 "The" effect is getting clearer...
 
