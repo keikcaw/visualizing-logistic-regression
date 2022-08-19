@@ -25,7 +25,7 @@ coefs.df %>%
   scale_color_manual("Relationship to\nprobability of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "Probability of passing",
-       title = "Estimated relationships between student characteristics and probability of passing") +
+       title = "Estimated relationships between student characteristics\nand probability of passing") +
   coord_flip() +
   theme_bw()
 
@@ -51,5 +51,5 @@ coefs.df %>%
   scale_color_manual("Relationship to\nprobability of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   labs(x = "Probability of passing", y = "",
-       title = "Estimated relationships between student characteristics and probability of passing") +
+       title = "Estimated relationships between student characteristics\nand probability of passing") +
   theme_bw()

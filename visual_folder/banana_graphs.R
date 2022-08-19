@@ -52,7 +52,7 @@ pet.fish +
                              coefs.df$est[coefs.df$parameter == "pet.typefish"]),
            color = "black", size = 0.5,
            arrow = arrow(type = "closed", length = unit(0.02, units = "npc"))) +
-  annotate("text", x = 0.1, y = 0.55, size = 2.90, hjust = 0,
+  annotate("text", x = 0.1, y = 0.7, size = 2.90, hjust = 0,
            label = str_wrap(paste("Some student who does not own a pet fish has a 40% chance of passing (x-axis value).",
                                   " However, if that same student did own a pet fish,",
                                   " their predicted probability of passing would be ",
