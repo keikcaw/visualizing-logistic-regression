@@ -184,176 +184,93 @@ We can plot exponentiated coefficients just like raw coefficients.
 
 Changes in odds ratios may be a bit easier to describe for your audience than changes in log-odds. (For example, tripling the odds ratio is like going from 3-to-1 odds to 9-to-1 odds, or from 1-to-3 odds to an even chance.) But we're still pretty far removed from the kinds of scales your audience will be most familiar with, like percentages. Worse, there's a danger that the percent change in log odds might be misinterpreted as the absolute probability of the outcome (or the change in its probability), which is not what these plots represent at all. Finally, when we represent the coefficients as changes in odds ratios, we expand the scale for coefficients with a positive effect and compress it for coefficients with a negative effect. (The odds ratio graph suggests that a `r round(sd(df$prior.gpa), 1)`-point increase in prior GPA has a much larger effect on passing than having a pet fish, while the graph of log-odds suggests that the effects have approximately the same magnitude.)
 
-# 3 "The" effect is getting clearer...
+# Presenting probabilities
 
-## 3.1 Probability relative to some baseline
-Description and explanation
-
-**Pros**
-
-**Cons**
-
-**When this graph is appropriate**
-
-**When this graph is not appropriate**
+### Probability relative to some baseline
 
 ```{r probability_baseline, include = F}
 knitr::read_chunk("visual_folder/probability_baseline.R")
 ```
 
+Your audience may not be familiar with log-odds or odds ratios, but they are certainly familiar with probabilities. We've already  discussed the primary obstacle to translating logistic regression coefficients into probabilities: the change in percentage points depends on the baseline starting value. But if we can choose an appropriate baseline probability, we can present our model coefficients on a probability scale after all.
+
+One approach is to use the overall intercept of the model as a baseline. When we take the inverse logit of the intercept, we get the probability of passing for a student with average prior GPA, average height, and the baseline value of each categorical variable -- not a Mac user, doesn't wear glasses, has no pet, favorite color is blue, and didn't go to tutoring. This baseline probability of passing, as it turns out, is `r round(invlogit(coefs.df$est[coefs.df$parameter == "(Intercept)"]) * 100)`%.  We can then add each coefficient individually to the intercept to discover the predicted probability of passing for a baseline student with one characteristic changed:
+
 ```{r probability-relative-to-some-baseline-no-arrows}
 ```
 
+This graph includes confidence intervals around the predicted probabilities, just like the confidence intervals around the coefficients in the earlier graphs.  Alternatively, we can use arrows to emphasize that we're showing predicted differences from a baseline:
 
 ```{r probability-relative-to-some-baseline-with-arrows}
 ```
 
+The biggest advantage of this approach is that it uses a scale that your audience is already very familiar with: probabilities (expressed as percentages). Moreover, it avoids a common, but misleading, way of presenting changes in probabilities: the "percent change" formulation. If I tell you that tutoring doubles a student's chances of passing, you don't know whether it raises the student's chances from 1% to 2% or from 40% to 80% -- and that difference probably matters to you! Instead, it presents the "before" and "after" probabilities simultaneously, which is much more helpful context for the audience.
 
-## 3.2 Probability relative to some baseline and group
-Description and explanation
+The biggest difficulty with this approach is choosing an appropriate baseline. The idea of representing an "average" student seems reasonable enough, although the process for doing so depends on how the model is specified. In our model, the intercept represents a student with average values for the continuous predictors because we standardized those predictors; if we hadn't, the intercept would be quite different and would represent a student with a prior GPA and height of 0. Such a baseline wouldn't make any sense; in that case, we would want to make adjustments (for example, by adding the mean prior GPA an d height back to the intercept, multiplied by their respective coefficients).
 
-**Pros**
+More seriously, with respect to the categorical predictors, our baseline represents a student who is _not_ actually all that average: it's a student who is not a Mac user, doesn't wear glasses, etc. All of our baseline categories are the most frequent values in the dataset, but it's nevertheless the case that students with _all_ of the most frequent values are a small minority (only `r df %>% mutate(all.freq = as.numeric(!mac & !glasses & pet.type == "none" & favorite.color == "blue" & !tutoring) * 100) %>% pull(all.freq) %>% mean() %>% round()`% of the dataset). Whether this is an acceptable baseline depends on your particular situation.
 
-**Cons**
+Another approach would be to take the raw pass rate from the overall dataset and use _that_ as the baseline. (To get probabilities for each predictor, we would take the logit of the raw pass rate, add the appropriate coefficient, and take inverse logit to get back to a probability.) Or you could choose a probability that is meaningful for your particular application (for example, maybe your stakeholders are especially interested in students who are "on the edge", and so you might choose 50% as a baseline). What all this discussion shows is that presenting your model as changes in probabilities doesn't eliminate the need to explain the visualization to your stakeholders. You may not have to explain the probability scale, but you will definitely need to explain how and why you chose the baseline you did.
 
-**When this graph is appropriate**
-
-**When this graph is not appropriate**
+### Multiple baselines by group
 
 ```{r probability_group, include = F}
 knitr::read_chunk("visual_folder/probability_group.R")
 ```
 
+If there's no single appropriate baseline probability for your dataset, you might choose to make multiple plots, one for each of several baselines. In the example below, we show four baselines, one for each type of pet a student might have. The baseline for each group is the overall model intercept plus the coefficient for that type of pet.
 
 ```{r probability-relative-to-some-baseline-and-group-no-arrows}
 ```
 
+As before, we can use arrows instead of confidence intervals:
 
 ```{r probability-relative-to-some-baseline-and-group-with-arrows}
 ```
 
+This approach is more cluttered than a single graph. But, if that's not a deal-breaker for you, it has several advantages. First, it emphasizes that the baseline we show is a _choice_, and that different students have different baselines.
 
-## 3.3 Banana graphs
+Second, this approach explicitly shows how the effect of a given predictor varies depending on the baseline. In the example above, prior GPA is associated with a larger percentage point change for students who have a fish than for other types of students, because students with fish start at a different baseline.
 
-I came across a resource which had a very clever approach to present logistic regression using some baseline value. Using our students in Balloon Animal Making 201, an example of how the technique is performed goes as follows: Assume our stakeholder is interested in knowing what the effect of owning a pet fish has on passing Balloon Animal Making 201. Then we can write the logistic regression equation as the following:
+Finally, this approach allows you to show different effects by group. In our example, the larger effect for students with fish is purely a function of their lower baseline. But we could easily imagine a model with true _interactions_ between pet type and other predictors. (For example, maybe tutoring is more effective for dog owners than for cat owners.) In that case, we would just add the interaction term when computing the probability for the relevant predictor.
 
-
-$$
-log(\frac{p}{1-p}) = \beta_0 + \beta_{own~a~pet~fish}X_{own~a~pet~fish} + \beta_1X_1...+\beta_nX_n
-$$
-
-
-Where p is the predicted probability and 1 = own pet fish and 0 = do not own a fish. Pick some arbitrary baseline probability for people who do not own a pet fish. Let's randomly pick 15% as the predicted probability of passing Balloon Animal Making 201 for students who do not own a fish. Then,
-
-$$
-log(\frac{p_{do~not~own~pet~fish}}{1-p_{do~not~own~pet~fish}}) = \beta_0 + \beta_{own~a~pet~fish}X_{own~a~pet~fish} + \beta_1X_1...+\beta_nX_n
-$$
-
-$$
-log(\frac{0.15}{1-0.15}) = \beta_0 + \beta_{own~a~pet~fish}(0) + \beta_1X_1...+\beta_nX_n
-$$
-
-
-
-$$
-log(0.1764) = \beta_0 + \beta_1X_1 + ... + \beta_nX_n
-$$
-
-
-$$
--1.7346 = \beta_0 + \beta_1X_1 + ... + \beta_nX_n
-$$
-
-Using this equation, we can find the predicted probability of someone who does own a pet fish:
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_0 + \beta_{own~a~pet~fish}X_{own~a~pet~fish}+\beta_1X_1+...+\beta_nX_n 
-$$
-
-
-
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_0 + \beta_{own~a~pet~fish}(1)+\beta_1X_1+...+\beta_nX_n 
-$$
-
-
-We can rearrange this equation:
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_{own~a~pet~fish} + (\beta_0 + \beta_1X_1+...+\beta_nX_n)
-$$
-We know what $beta_{own~a~pet~fish}$ is from our model. If **we assume that this person who owns a fish has the same exact qualities as the person who does not own a fish and has a 15% predicted probability of passing**, then:
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_{own~a~pet~fish} + (-1.7346)
-$$
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = -1.19359 + (-1.7346)
-$$
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = -1.19359 + (-1.7346)
-$$
-
-$$
-\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}} = e^{-2.92819}
-$$
-
-
-
-$$
-p_{own~a~pet~fish}= 0.05077749
-$$
-
-Therefore, if a student who does not own a pet fish and has a 15% predicted probability of passing Balloon Animal Making 201, then a student who has the exact same qualities, except that they own a pet fish, will have a 5% predicted probability of passing Balloon Animal Making 201.  
-
-This technique, however, requires that we pick and choose arbitrary baselines, and begs the following questions: Which baselines should we even choose, and how many should we present to our audience? We can overcome this picking-and-choosing problem by iterating across every baseline. For example, we can calculate the 0% to 100% predicted probability of passing Balloon Animal Making 201 for a student who does not own a pet fish, and use those baseline values to compute the predicted probability of a student who does own a pet fish and plot these values on a graph. The x-axis values for each point on the curve is the baseline probability i.e., the probability that student does not own a pet fish. The y-axis values for each point on the curve is the probability increase or decrease from the baseline i.e., the probability that the student does own a pet fish. Due to the shape of the curve, we call this graph the banana graph. The different color shades of the curve represent confidence intervals. We also include a solid line which goes diagonally across the middle of the graph as a reference line. When the banana-shaped curve is:
-
-* **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
-* **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
-* **Below the solid line**:the predictor variable has a lower predicted probability of passing than its baseline
-
-In the figure below, you can see that the red, banana-shaped curve is below the solid line, meaning, students who own a pet fish are less likely to pass than students who do not own a pet fish.
+### Banana graphs
 
 ```{r banana_graphs, include = F}
 knitr::read_chunk("visual_folder/banana_graphs.R")
 ```
 
+Even if we present multiple groups, we still have to choose a (possibly arbitrary) baseline for each group. We can overcome this picking-and-choosing problem by iterating across every baseline. For example, we can calculate the 0% to 100% predicted probability of passing Balloon Animal Making 201 for a student who does not own a pet fish, and use those baseline values to compute the predicted probability of a student who does own a pet fish and plot these values on a graph. The x-axis values for each point on the curve is the baseline probability, i.e., the probability that the student does not own a pet fish. The y-axis values for each point on the curve is the probability increase or decrease from the baseline, i.e., the probability that the student does own a pet fish. Due to the shape of the curve, we call this graph the banana graph. We also include a solid line which goes diagonally across the middle of the graph as a reference line. When the banana-shaped curve is:
+
+* **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
+* **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
+* **Below the solid line**: the predictor variable has a lower predicted probability of passing than its baseline
+
+In the figure below, you can see that the banana-shaped curve is below the solid line, meaning, students who own a pet fish are less likely to pass than students who do not own a pet fish.
+
 ```{r create-banana-graph}
 ```
-
 
 ```{r banana-graph-bare}
 ```
 
+However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown below). If your audience is unfamiliar with these graphs it can be overwhelming, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph. 
 
-### Adjustments to enhance the visual
-However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown in the Figure below). If your audience is unfamiliar with these graphs it can be overwhelming for your audience members, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph. 
-
-
-```{r banana-graph-annotated, fig.width = 9, fig.height = 9}
+```{r banana-graph-annotated}
 ```
-
 
 Once you've helped the audience understand one banana graph, you can then go on to present multiple banana graphs, like so:  
 
 ```{r banana-graph-multiple}
 ```
 
-
-
-### Usage and Limitations
-
 These graphs are perfect for showing the whole range of predicted probabilities. However, the downside to these graphs is, if you're planning on showing the effect of multiple variables, they can take up a great deal of real estate on your report. The banana graphs require one graph per predictor variable. In the case that you must present the effect of many predictor variables, you may overwhelm your audience by the sheer volume of graphs. Additionally, the forest plots in the previous examples could show all the predictors and their effect size in one graph, which means one can easily compare values between any two predictors in one forest plot graph. However, with the banana graphs, you audience's eyes have to dart from one graph to the next to compare any two predictor variables. Another limitation to this visual is that, if it is your audience's first time seeing these banana graphs, then it may be difficult for them to understand. Although we discussed a design layout to overcome this issue, it is still important to think about whether there is a better visual which does not require you to go to certain lengths to explain what the graph is trying to convey. 
 
-
-# 4 "The" effect is crystal clear
+# Presenting counterfactuals
+  
+```{r counterfactuals, include = F}
+knitr::read_chunk("visual_folder/counterfactuals.R")
+```
 
 ## 4.1 Conterfactual Visual V1
 Description and explanation
@@ -365,10 +282,6 @@ Description and explanation
 **When this graph is appropriate**
   
 **When this graph is not appropriate**
-  
-```{r counterfactuals, include = F}
-knitr::read_chunk("visual_folder/counterfactuals.R")
-```
 
 ```{r counterfactual-visual-one}
 ```
