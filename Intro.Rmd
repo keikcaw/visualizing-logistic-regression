@@ -22,8 +22,6 @@ library(grid)
 library(gridExtra)
 library(patchwork)
 
-source("visual_folder/colors.R",local = knitr::knit_global())
-
 theme_set(theme_bw())
 ```
 
@@ -117,6 +115,13 @@ We built a logistic regression model to determine what variables are associated 
 We pulled out the model coefficients and created a dataframe. This dataframe will be used throughout our visualization-exploration journey. 
 
 ```{r get-coefficients, class.source = "fold-show"}
+```
+
+### Colors
+
+The code below uses a few named colors for consistency across graphs:
+
+```{r, file = "visual_folder/colors.R", class.source = "fold-show"}
 ```
 
 ### Disclaimer: causality
@@ -324,7 +329,7 @@ The graph below shows, for each pet type, the number of untutored students with 
 
 This approach is a step towards acknowledging different group sizes, and it also helps put the absolute numbers in context. (50 extra passes is extremely impressive if the baseline was 50, but less so if the baseline was 10,000.) But note that it doesn't convey the size of the _whole_ group, only of the number of passing students in the group. For example, the graph doesn't explain whether the number of passing students with fish is small because there aren't many of them in the first place, or because fish owners are more likely to fail. (In this case it's both, but that won't always be true.) In addition, if you have groups of vastly unequal sizes, then the effects for smaller groups will be squashed at the bottom of the scale and difficult to see.
 
-# Concluding Remarks
+# Conclusion
 
 - If your work and models cannot be understood by the stakeholders for whom you probably built the models for then what was the point of all your work? 
 - Use colors to your advantage, use the layout to your advantage, annotate if it might aid
