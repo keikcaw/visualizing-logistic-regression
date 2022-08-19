@@ -21,8 +21,7 @@ coefs.df %>%
                      values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "Change in log odds",
        title = "Estimated relationships between student characteristics and log odds of passing") +
-  coord_flip() +
-  theme_bw()
+  coord_flip()
 
 # ---- change-in-log-odds-adjusted-axis ----
 # Plot the coefficients (change in log odds), but hide the numbers on the
@@ -49,6 +48,5 @@ coefs.df %>%
   scale_color_manual("Relationship to\nchance of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "Chance of passing",
-       title = "Estimated relationships between student characteristics and chance of passing") +
-  coord_flip() +
-  theme_bw()
+       title = "Estimated relationships between student characteristics\nand chance of passing") +
+  coord_flip()
