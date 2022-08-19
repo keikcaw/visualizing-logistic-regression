@@ -30,7 +30,7 @@ theme_set(theme_bw())
 
 
 
-## Introduction: Just tell me "the" effect
+# Introduction: Just tell me "the" effect
 
 Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. To review, the formula for the logistic regression model is the following: 
 
@@ -79,24 +79,22 @@ ggplot() +
 
 The slope of the curve is not constant: a one-unit increase for different values of _z_ can result in vastly different probabilities _p_. Where the slope of the curve is relatively flat, for example from _z_ = -5 to _z_ = -2.5, the difference in probability from a one-unit increase is very small. On the other hand, where the slope curve is steep, for example from _z_ = 0 to _z_ = 2.5, the difference in probability from a one-unit increase is large. 
 
-Due to the non-linear nature of the curve means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this discussion we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of each option. We will also discuss in which situations you might choose one visualization over another. 
+The non-linear nature of the curve means that **the magnitude of effect in percentage points varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this discussion we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of each option. We will also discuss in which situations you might choose one visualization over another. 
 
+# Sample dataset and model
 
-
-## 1 Preliminaries 
-
-### 1.1 Load the data
 ```{r fit_model, include = F, cache = F}
 knitr::read_chunk("R_code/fit_model.R")
-
 ```
 
+### Dataset
+
+Our simulated dataset describes students who took Balloon Animal-Making 201 at University Imaginary.  It is available in `course_outcomes.csv` (included in the GitHub repository).
 
 ```{r load-data, class.source = "fold-show"}
 ```
 
-
-`course_outcomes.csv` is a simulated dataset that we created. The dataset contains various variables related to students who took Balloon Animal-Making 201 at University Imaginary. The variables are summarized in the table below. 
+The dataset contains the following variables.  The two continuous variables are stored twice: one column with their raw values, and a second column with centered and standardized values (for model fitting).
 
 ```{r dataset_summary_table, echo = F}
 table <- data.frame(
@@ -109,31 +107,25 @@ table %>%
     kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
+### Model
 
-### 1.2 Build a model
 We built a logistic regression model to determine what variables are associated with a student passing the Balloon Animal Making course.
 
 ```{r model, class.source = "fold-show"}
 ```
 
-### 1.3 Pull out model coefficients
-Pull out the model coefficients and create a dataframe. This dataframe will be used throughout our visualization-exploration journey. 
+We pulled out the model coefficients and created a dataframe. This dataframe will be used throughout our visualization-exploration journey. 
 
 ```{r get-coefficients, class.source = "fold-show"}
 ```
 
-
-
-
-
-
-## 2 "The" effect is as clear as mud
+# 2 "The" effect is as clear as mud
 
 As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is a plot of the raw outputs of the predictors estimated by the model. In this section we will review how to create different visuals from the raw outputs of the model and from there adding small adjustments to make the visual more interpretable to a non-technical audience member. 
 
 
 
-### 2.1 Log odds
+## 2.1 Log odds
 
 Often times in papers we see a summary of the model's raw outputs in a table. All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a forest plot of the predictors as shown below:
 
@@ -148,21 +140,21 @@ knitr::read_chunk("visual_folder/log_odds.R")
 This plot clearly presents all the predictors used in the model, catalogs which effects are positive, negative, or no effect, and contains confidence intervals to convey the uncertainty in our estimates. Using the raw outputs from the logistic regression means that the magnitude of effect is in the log-odds scale. This visual is perfect for audiences who know exactly what a log-odds is, and problematic for non-technical audiences who do not. The visual can leave your non-technical audience member wondering what a 0.4 change in the log-odds even means. Is the difference between a change in the log-odds of 0.4 and 0.8 big or small?  If the scale doesn't mean anything to your audience member then it is your duty as the researcher to either provide an explanation or make an adjustment. 
 
 
-#### Adjustments to enhance the visual
+### Adjustments to enhance the visual
 Rather than trying to have your audience understand log-odds, the simplest adjustment you could make is to relabel the x-axis. This second visual is exactly the same as the fist visual, with the only difference being in the x-axis. Instead of the x-axis being the change in the log-odds, it simply is the chance of passing higher, the same, or lower, making the x-axis scale interpretable. 
 
 ```{r change-in-log-odds-adjusted-axis}
 ```
 
 
-#### Usage and limitations
+### Usage and limitations
 This graph is perfect if your audience is only interested in knowing whether there is an effect and whether some variable is more or less likely to affect the outcome of interest. However, relabeling the axis this way means that there are bands of different lengths but no unit of measurement to describe the relative effect size between any predictors. Therefore, just like the first graph, we run into the same issue: the non-technical audience member still will not get a sense of the magnitude of effect. This is problematic because say, for example, your stakeholder begins offering tutoring sessions to students in Balloon Animal Making 201 and they want to know if this new intervention is helping students pass the class. The effect of the tutoring intervention could be positive, but the intervention's magnitude of effect could only be a 5% increased chance of passing the class for students who are at risk of failing. Your stakeholder may deem that a 5% increase is not a high enough increase to justify funding the tutoring program. 
 
 
 
 
 
-### 2.2 Odds ratio
+## 2.2 Odds ratio
 
 Description and explanation
 
@@ -184,7 +176,7 @@ knitr::read_chunk("visual_folder/odds_ratio_forest_plot.R")
 ```
 
 
-### 
+## 
 
 ```{r odds_ratio_adjusted, include = F}
 knitr::read_chunk("visual_folder/odds.R")
@@ -197,9 +189,9 @@ knitr::read_chunk("visual_folder/odds.R")
 
 
 
-## 3 "The" effect is getting clearer...
+# 3 "The" effect is getting clearer...
 
-### 3.1 Probability relative to some baseline
+## 3.1 Probability relative to some baseline
 Description and explanation
 
 **Pros**
@@ -222,7 +214,7 @@ knitr::read_chunk("visual_folder/probability_baseline.R")
 ```
 
 
-### 3.2 Probability relative to some baseline and group
+## 3.2 Probability relative to some baseline and group
 Description and explanation
 
 **Pros**
@@ -246,7 +238,7 @@ knitr::read_chunk("visual_folder/probability_group.R")
 ```
 
 
-### 3.3 Banana graphs
+## 3.3 Banana graphs
 
 I came across a resource which had a very clever approach to present logistic regression using some baseline value. Using our students in Balloon Animal Making 201, an example of how the technique is performed goes as follows: Assume our stakeholder is interested in knowing what the effect of owning a pet fish has on passing Balloon Animal Making 201. Then we can write the logistic regression equation as the following:
 
@@ -346,7 +338,7 @@ knitr::read_chunk("visual_folder/banana_graphs.R")
 ```
 
 
-#### Adjustments to enhance the visual
+### Adjustments to enhance the visual
 However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown in the Figure below). If your audience is unfamiliar with these graphs it can be overwhelming for your audience members, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph. 
 
 
@@ -361,14 +353,14 @@ Once you've helped the audience understand one banana graph, you can then go on 
 
 
 
-#### Usage and Limitations
+### Usage and Limitations
 
 These graphs are perfect for showing the whole range of predicted probabilities. However, the downside to these graphs is, if you're planning on showing the effect of multiple variables, they can take up a great deal of real estate on your report. The banana graphs require one graph per predictor variable. In the case that you must present the effect of many predictor variables, you may overwhelm your audience by the sheer volume of graphs. Additionally, the forest plots in the previous examples could show all the predictors and their effect size in one graph, which means one can easily compare values between any two predictors in one forest plot graph. However, with the banana graphs, you audience's eyes have to dart from one graph to the next to compare any two predictor variables. Another limitation to this visual is that, if it is your audience's first time seeing these banana graphs, then it may be difficult for them to understand. Although we discussed a design layout to overcome this issue, it is still important to think about whether there is a better visual which does not require you to go to certain lengths to explain what the graph is trying to convey. 
 
 
-## 4 "The" effect is crystal clear
+# 4 "The" effect is crystal clear
 
-### 4.1 Conterfactual Visual V1
+## 4.1 Conterfactual Visual V1
 Description and explanation
 
 **Pros**
@@ -387,7 +379,7 @@ knitr::read_chunk("visual_folder/counterfactuals.R")
 ```
 
 
-### 4.2 Counterfactual Visual V2
+## 4.2 Counterfactual Visual V2
 
 Description and explanation
 
@@ -403,7 +395,7 @@ Description and explanation
 ```
 
 
-### 4.3 Counterfactual Visual V3
+## 4.3 Counterfactual Visual V3
 
 Description and explanation
 
@@ -419,7 +411,7 @@ Description and explanation
 ```
 
 
-## Concluding Remarks
+# Concluding Remarks
 
 - If your work and models cannot be understood by the stakeholders for whom you probably built the models for then what was the point of all your work? 
 - Use colors to your advantage, use the layout to your advantage, annotate if it might aid
