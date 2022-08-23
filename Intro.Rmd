@@ -3,13 +3,13 @@ title: "Visualizing logistic regression results for non-technical audiences"
 author: "Abby Kaplan and Keiko Cawley"
 date: "9/20/2022"
 output: 
-    html_document:
-            code_folding: hide
-            toc: true
-            toc_float: true
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
 ---
 
-```{r setup, include=FALSE, warning = FALSE}
+```{r setup, include = F, warning = F}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
@@ -22,389 +22,314 @@ library(grid)
 library(gridExtra)
 library(patchwork)
 
-source("visual_folder/colors.R",local = knitr::knit_global())
-
+theme_set(theme_bw())
 ```
 
 
 
 
-## Introduction: Just tell me "the" effect
+# Introduction: Just tell me "the" effect
 
-Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much. When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward. To review, the formula for the logistic regression model is the following: 
-
-$$
-logit = log(\frac{p}{1-p}) = \beta_0 + \beta_1X_1 +...+ \beta_nX_n
-$$
-
-In the equation *p* is the probability, each of the $\beta$ coefficients represents some increase or decrease on the logistic regression curve, and each of the X~i~s are either ones or zeros which act like switches to turn the $\beta$s on or off. This equation tells us that each of the $\beta$s are in the log-odds scale. This is precisely one of the reasons why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability *p*:
-
+Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much.  When we use a logistic regression to model a binary outcome, communicating these results is not so straightforward.To review, the formula for the logistic regression model is the following: 
 
 $$
-p =\frac{exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}{1 + exp(\beta_0 + \beta_1X_1 + ... + \beta_nX_n)}
+\mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
 $$
 
-If we graph the equation we get a sigmoid shaped curve:
+In the equation _p_ is the probability of the outcome, each of the *x~i~*s is a variable we are using to predict the outcome, and each of the _β_ coefficients represents some increase or decrease on the logistic regression curve associated with that variable. This equation tells us that each of the *β*s are in the log-odds scale. This is precisely one of the reasons why it is difficult to convey the magnitude of effect for a logistic regression model. If everyone knew what a log-odds was and how to convey measurements in the log-odds scale, then interpreting logistic regression results would be a walk in the park. But for most of us, the log-odds is not a unit of measurement we understand. A scale that we *do*, however, understand is the probability scale which ranges from 0 to 1. Fortunately, we can go from the log-odds to probability scale by rearranging the equation above and solving for the probability _p_:
 
-```{r, echo = F, message = F}
+$$
+\begin{aligned}
+p & = \mbox{logit}^{-1}(\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n) \\ & \\
+& = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}
+\end{aligned}
+$$
+
+If we graph the equation we get a sigmoid-shaped curve:
+
+```{r, echo = F, message = F, fig.height = 4, fig.width = 5, fig.align = "center"}
 
 curve <- function(x) (exp(x)/(1+(exp(x))))
 
 set.seed(1500)
-ggplot(data = data.frame(x=rnorm(10000)), mapping = aes(x = x)) +
-    stat_function(fun = curve, color = "#009DD8") +
-    ylim(0,1)+
-    xlim(-10,10) + 
-    theme(axis.ticks.x = element_blank()) +
-    ylab('probability (p)') +
-    xlab(label = expression(Z~'='~beta[0] + beta[1]~X[1]~'+'~'... +'~beta[n]~X[n]))
+ggplot() +
+  stat_function(fun = curve, color = "#009DD8") +
+  annotate("segment", x = -3, xend = -2, y = invlogit(-3), yend = invlogit(-3),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = -2, xend = -2, y = invlogit(-3), yend = invlogit(-2),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = -3.5, y = 0.3,
+           label = str_wrap("A 1-unit change here leads to a small change in probability",
+                            20)) +
+  annotate("segment", x = 0, xend = 1, y = invlogit(0), yend = invlogit(0),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = 1, xend = 1, y = invlogit(0), yend = invlogit(1),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = 3, y = 0.6,
+           label = str_wrap("A 1-unit change here leads to a large change in probability",
+                            20)) +
+  ylim(0, 1) +
+  xlim(-5, 5) + 
+  ylab("probability (p)") +
+  xlab(label = expression(z~'='~beta[0]+beta[1]~X[1]~'+'~'...+'~beta[n]~X[n]))
 
 ```
 
-The slope of the curve is not constant: A one unit increase for different values of Z can result in vastly different probabilities *p*. Notice that the difference in probability between any two points where the slope of the curve is relatively flat, for example from x = -5 to x = -2.5 the difference is very small. On the otherhand, the difference in probability between any two points where the slope curve is steep, for example from x = 0 to x = 2.5 the difference in probability is large. 
+The slope of the curve is not constant: a one-unit increase for different values of _z_ can result in vastly different probabilities _p_. Where the slope of the curve is relatively flat, for example from _z_ = -5 to _z_ = -2.5, the difference in probability from a one-unit increase is very small. On the other hand, where the slope curve is steep, for example from _z_ = 0 to _z_ = 2.5, the difference in probability from a one-unit increase is large. 
 
+The non-linear nature of the curve means that **the magnitude of effect in percentage points varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this discussion we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of each option. We will also discuss in which situations you might choose one visualization over another. 
 
-Due to the non-linear nature of the curve means that **the magnitude of effect varies**. If the effect varies, then what is "the" effect that we report, and particularly to a stakeholder who does not know what a logistic regression is? In this talk we will explore various visualization options to present logistic regression results to non-technical audiences, and the pros and cons of these different visualizations. We will also discuss in which situations you might choose one visualization over another. 
+# Sample dataset and model
 
-
-
-## 1 Preliminaries 
-
-### 1.1 Load the data
 ```{r fit_model, include = F, cache = F}
 knitr::read_chunk("R_code/fit_model.R")
-
 ```
 
+### Dataset
+
+Our simulated dataset describes students who took Balloon Animal-Making 201 at University Imaginary.  It is available in `course_outcomes.csv` (included in the GitHub repository).
 
 ```{r load-data, class.source = "fold-show"}
 ```
 
-
-`course_outcomes.csv` is a simulated dataset that we created. The dataset contains various variables related to students who took Balloon Animal-Making 201 at University Imaginary. The variables are summarized in the table below. 
+The dataset contains the following variables.  The two continuous variables are stored twice: one column with their raw values, and a second column with centered and standardized values (for model fitting).
 
 ```{r dataset_summary_table, echo = F}
 table <- data.frame(
-    Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
-    Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
-    Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
+  Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
+  Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
+  Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
 ) 
 table %>%
-    kbl(col.names = gsub("[.]", " ", names(table))) %>%
-    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+  kbl(col.names = gsub("[.]", " ", names(table))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
+### Model
 
-### 1.2 Build a model
 We built a logistic regression model to determine what variables are associated with a student passing the Balloon Animal Making course.
 
 ```{r model, class.source = "fold-show"}
 ```
 
-### 1.3 Pull out model coefficients
-Pull out the model coefficients and create a dataframe. This dataframe will be used throughout our visualization-exploration journey. 
+We pulled out the model coefficients and created a dataframe. This dataframe will be used throughout our visualization-exploration journey. 
 
 ```{r get-coefficients, class.source = "fold-show"}
 ```
 
+### Colors
 
+The code below uses a few named colors for consistency across graphs:
 
+```{r, file = "visual_folder/colors.R", class.source = "fold-show"}
+```
 
+### Disclaimer: causality
 
+# Presenting model coefficients
 
-## 2 "The" effect is as clear as mud
+As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is a plot of the raw outputs of the predictors estimated by the model. In this section we will review visualizations based on the raw coefficients or simple functions thereof.
 
-As the researcher, perhaps the easiest visualization we can create from the logistic regression analysis is a plot of the raw outputs of the predictors estimated by the model. In this section we will review how to create different visuals from the raw outputs of the model and from there adding small adjustments to make the visual more interpretable to a non-technical audience member. 
-
-
-
-### 2.1 Log odds
-
-Often times in papers we see a summary of the model's raw outputs in a table. All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a forest plot of the predictors as shown below:
-
+### Log odds
 
 ```{r log_odds, include = F, cache = F}
 knitr::read_chunk("visual_folder/log_odds.R")
 ```
+
+Oftentimes in papers we see a summary of the model's raw outputs in a table, like this:
+
+```{r coefficient_table, echo = F}
+coefs.df %>%
+  dplyr::select(-parameter) %>%
+  kbl(col.names = c("Parameter", "Estimate", "Standard error", "z", "p")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+```
+
+All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a caterpillar plot of the predictors as shown below:
 
 ```{r change-in-log-odds}
 ```
 
 This plot clearly presents all the predictors used in the model, catalogs which effects are positive, negative, or no effect, and contains confidence intervals to convey the uncertainty in our estimates. Using the raw outputs from the logistic regression means that the magnitude of effect is in the log-odds scale. This visual is perfect for audiences who know exactly what a log-odds is, and problematic for non-technical audiences who do not. The visual can leave your non-technical audience member wondering what a 0.4 change in the log-odds even means. Is the difference between a change in the log-odds of 0.4 and 0.8 big or small?  If the scale doesn't mean anything to your audience member then it is your duty as the researcher to either provide an explanation or make an adjustment. 
 
+### Secret log odds
 
-#### Adjustments to enhance the visual
-Rather than trying to have your audience understand log-odds, the simplest adjustment you could make is to relabel the x-axis. This second visual is exactly the same as the fist visual, with the only difference being in the x-axis. Instead of the x-axis being the change in the log-odds, it simply is the chance of passing higher, the same, or lower, making the x-axis scale interpretable. 
+Rather than trying to have your audience understand log-odds, the simplest adjustment you could make is to relabel the x-axis. This second visual is exactly the same as the fist visual, with the only difference being in the x-axis. Instead of the x-axis showing the log-odds scale explicitly, it simply indicates whether the chance of passing is higher, the same, or lower.
 
 ```{r change-in-log-odds-adjusted-axis}
 ```
 
+This graph is perfect if your audience is only interested in knowing which variables (if any) are related to the outcome, and what the sign of each relationship is.  Within limits, it can also show which variables are more strongly related to the outcome than others (depending on how continuous predictors are scaled). However, relabeling the axis this way means that there are bands of different lengths but no unit of measurement to describe their absolute effect size. Therefore, just like the first graph, we run into the same issue: the non-technical audience member still will not get a sense of the overall magnitude of effect. This is problematic because say, for example, your stakeholder asked you to evaluate whether offering tutoring sessions to students in Balloon Animal Making 201 is helping students pass the class. The effect of the tutoring intervention is positive, but this graph doesn't indicate what that means in practical terms: does it increase a student's chance of passing by 5%? 90%? Your stakeholder may deem that a 5% increase is not a high enough increase to justify funding the tutoring program.
 
-#### Usage and limitations
-This graph is perfect if your audience is only interested in knowing whether there is an effect and whether some variable is more or less likely to affect the outcome of interest. However, relabeling the axis this way means that there are bands of different lengths but no unit of measurement to describe the relative effect size between any predictors. Therefore, just like the first graph, we run into the same issue: the non-technical audience member still will not get a sense of the magnitude of effect. This is problematic because say, for example, your stakeholder begins offering tutoring sessions to students in Balloon Animal Making 201 and they want to know if this new intervention is helping students pass the class. The effect of the tutoring intervention could be positive, but the intervention's magnitude of effect could only be a 5% increased chance of passing the class for students who are at risk of failing. Your stakeholder may deem that a 5% increase is not a high enough increase to justify funding the tutoring program. 
-
-
-
-
-
-### 2.2 Odds ratio
-
-Description and explanation
-
-**Pros**
-
-**Cons**
-
-**When this graph is appropriate**
-
-**When this graph is not appropriate**
-
+### Odds ratios
 
 ```{r odds_ratio, include = F, cache = F}
-knitr::read_chunk("visual_folder/odds_ratio_forest_plot.R")
-```
-
-
-```{r odds-ratio, warning = F}
-```
-
-
-### 
-
-```{r odds_ratio_adjusted, include = F}
 knitr::read_chunk("visual_folder/odds.R")
 ```
 
+The log-odds scale is hard to interpret directly, but your audience may be more familiar with the "odds" part of log-odds. The quantity $\frac{p}{1 - p}$ is another way of expressing ideas like "3-to-1 odds" or "2-to-5 odds". Can we exponentiate the log-odds to get something more interpretable?
+
+Sort of, but there are two non-trivial obstacles. The first is that your audience is like to be more familiar with odds expressed as integer ratios ("3-to-1" or "2-to-5") rather than "3" or "0.4". Your model is unlikely to produce odds that are rational numbers for small integers, so you'll need to either explain your unusual-looking odds or convert them to approximations (for example, "roughly 1-to-3 odds" for a value of 0.35).
+
+The second, and more serious, problem is that the coefficients of your model (which are probably what your audience cares most about) don't represent odds directly; they represent _changes_ in odds. Each coefficient represents an additive change on the log-odds scale; when we exponentiate to get odds, each coefficient represents a multiplicative change. That is, for each _β~i~_, a one-unit increase in _x~i~_ multiplies the odds of the outcome by _e^β~i~^_. To put it yet another way, the coefficients represent a change in the _odds ratio_.
+
+$$
+\begin{aligned}
+e^{\beta_i} & = \frac{e^{\beta_i}e^{\beta_ix_i}}{e^{\beta_ix_i}} \\ \\
+& = \frac{e^{\beta_ix_i + \beta_i}}{e^{\beta_ix_i}} \\ \\
+& = \frac{e^{\beta_i(x_i + 1)}}{e^{\beta_ix_i}} \\ \\
+& = \frac{e^{\beta_i(x_i + 1)} \cdot e^{beta_0 + \beta_1x_1 + \ldots + \beta_{i - 1}x_{i - 1} + \beta_{i + 1}x_{i + 1} \ldots beta_nx_n}}{e^{\beta_ix_i} \cdot e^{beta_0 + \beta_1x_1 + \ldots + \beta_{i - 1}x_{i - 1} + \beta_{i + 1}x_{i + 1} \ldots beta_nx_n}} \\ \\
+& = \frac{e^{\log(\mbox{odds for } x_i + 1)}}{e^{\log(\mbox{odds for } x_i)}} \\ \\
+& = \frac{\mbox{odds for } x_i + 1}{\mbox{odds for } x_i}
+\end{aligned}
+$$
+
+We can plot exponentiated coefficients just like raw coefficients.
 
 ```{r odds-ratio-adjusted-axis}
 ```
 
+Changes in odds ratios may be a bit easier to describe for your audience than changes in log-odds. (For example, tripling the odds ratio is like going from 3-to-1 odds to 9-to-1 odds, or from 1-to-3 odds to an even chance.) But we're still pretty far removed from the kinds of scales your audience will be most familiar with, like percentages. Worse, there's a danger that the percent change in log odds might be misinterpreted as the absolute probability of the outcome (or the change in its probability), which is not what these plots represent at all. Finally, when we represent the coefficients as changes in odds ratios, we expand the scale for coefficients with a positive effect and compress it for coefficients with a negative effect. (The odds ratio graph suggests that a `r round(sd(df$prior.gpa), 1)`-point increase in prior GPA has a much larger effect on passing than having a pet fish, while the graph of log-odds suggests that the effects have approximately the same magnitude.)
 
+# Presenting probabilities
 
-
-## 3 "The" effect is getting clearer...
-
-### 3.1 Probability relative to some baseline
-Description and explanation
-
-**Pros**
-
-**Cons**
-
-**When this graph is appropriate**
-
-**When this graph is not appropriate**
+### Probability relative to some baseline
 
 ```{r probability_baseline, include = F}
 knitr::read_chunk("visual_folder/probability_baseline.R")
 ```
 
+Your audience may not be familiar with log-odds or odds ratios, but they are certainly familiar with probabilities. We've already  discussed the primary obstacle to translating logistic regression coefficients into probabilities: the change in percentage points depends on the baseline starting value. But if we can choose an appropriate baseline probability, we can present our model coefficients on a probability scale after all.
+
+One approach is to use the overall intercept of the model as a baseline. When we take the inverse logit of the intercept, we get the probability of passing for a student with average prior GPA, average height, and the baseline value of each categorical variable -- not a Mac user, doesn't wear glasses, has no pet, favorite color is blue, and didn't go to tutoring. This baseline probability of passing, as it turns out, is `r round(invlogit(coefs.df$est[coefs.df$parameter == "(Intercept)"]) * 100)`%.  We can then add each coefficient individually to the intercept to discover the predicted probability of passing for a baseline student with one characteristic changed:
+
 ```{r probability-relative-to-some-baseline-no-arrows}
 ```
 
+This graph includes confidence intervals around the predicted probabilities, just like the confidence intervals around the coefficients in the earlier graphs.  Alternatively, we can use arrows to emphasize that we're showing predicted differences from a baseline:
 
 ```{r probability-relative-to-some-baseline-with-arrows}
 ```
 
+The biggest advantage of this approach is that it uses a scale that your audience is already very familiar with: probabilities (expressed as percentages). Moreover, it avoids a common, but misleading, way of presenting changes in probabilities: the "percent change" formulation. If I tell you that tutoring doubles a student's chances of passing, you don't know whether it raises the student's chances from 1% to 2% or from 40% to 80% -- and that difference probably matters to you! Instead, it presents the "before" and "after" probabilities simultaneously, which is much more helpful context for the audience.
 
-### 3.2 Probability relative to some baseline and group
-Description and explanation
+The biggest difficulty with this approach is choosing an appropriate baseline. The idea of representing an "average" student seems reasonable enough, although the process for doing so depends on how the model is specified. In our model, the intercept represents a student with average values for the continuous predictors because we standardized those predictors; if we hadn't, the intercept would be quite different and would represent a student with a prior GPA and height of 0. Such a baseline wouldn't make any sense; in that case, we would want to make adjustments (for example, by adding the mean prior GPA an d height back to the intercept, multiplied by their respective coefficients).
 
-**Pros**
+More seriously, with respect to the categorical predictors, our baseline represents a student who is _not_ actually all that average: it's a student who is not a Mac user, doesn't wear glasses, etc. All of our baseline categories are the most frequent values in the dataset, but it's nevertheless the case that students with _all_ of the most frequent values are a small minority (only `r df %>% mutate(all.freq = as.numeric(!mac & !glasses & pet.type == "none" & favorite.color == "blue" & !tutoring) * 100) %>% pull(all.freq) %>% mean() %>% round()`% of the dataset). Whether this is an acceptable baseline depends on your particular situation.
 
-**Cons**
+Another approach would be to take the raw pass rate from the overall dataset and use _that_ as the baseline. (To get probabilities for each predictor, we would take the logit of the raw pass rate, add the appropriate coefficient, and take inverse logit to get back to a probability.) Or you could choose a probability that is meaningful for your particular application (for example, maybe your stakeholders are especially interested in students who are "on the edge", and so you might choose 50% as a baseline). What all this discussion shows is that presenting your model as changes in probabilities doesn't eliminate the need to explain the visualization to your stakeholders. You may not have to explain the probability scale, but you will definitely need to explain how and why you chose the baseline you did.
 
-**When this graph is appropriate**
-
-**When this graph is not appropriate**
+### Multiple baselines by group
 
 ```{r probability_group, include = F}
 knitr::read_chunk("visual_folder/probability_group.R")
 ```
 
+If there's no single appropriate baseline probability for your dataset, you might choose to make multiple plots, one for each of several baselines. In the example below, we show four baselines, one for each type of pet a student might have. The baseline for each group is the overall model intercept plus the coefficient for that type of pet.
 
 ```{r probability-relative-to-some-baseline-and-group-no-arrows}
 ```
 
+As before, we can use arrows instead of confidence intervals:
 
 ```{r probability-relative-to-some-baseline-and-group-with-arrows}
 ```
 
+This approach is more cluttered than a single graph. But, if that's not a deal-breaker for you, it has several advantages. First, it emphasizes that the baseline we show is a _choice_, and that different students have different baselines.
 
-### 3.3 Banana graphs
+Second, this approach explicitly shows how the effect of a given predictor varies depending on the baseline. In the example above, prior GPA is associated with a larger percentage point change for students who have a fish than for other types of students, because students with fish start at a different baseline.
 
-I came across a resource which had a very clever approach to present logistic regression using some baseline value. Using our students in Balloon Animal Making 201, an example of how the technique is performed goes as follows: Assume our stakeholder is interested in knowing what the effect of owning a pet fish has on passing Balloon Animal Making 201. Then we can write the logistic regression equation as the following:
+Finally, this approach allows you to show different effects by group. In our example, the larger effect for students with fish is purely a function of their lower baseline. But we could easily imagine a model with true _interactions_ between pet type and other predictors. (For example, maybe tutoring is more effective for dog owners than for cat owners.) In that case, we would just add the interaction term when computing the probability for the relevant predictor.
 
-
-$$
-log(\frac{p}{1-p}) = \beta_0 + \beta_{own~a~pet~fish}X_{own~a~pet~fish} + \beta_1X_1...+\beta_nX_n
-$$
-
-
-Where p is the predicted probability and 1 = own pet fish and 0 = do not own a fish. Pick some arbitrary baseline probability for people who do not own a pet fish. Let's randomly pick 15% as the predicted probability of passing Balloon Animal Making 201 for students who do not own a fish. Then,
-
-$$
-log(\frac{p_{do~not~own~pet~fish}}{1-p_{do~not~own~pet~fish}}) = \beta_0 + \beta_{own~a~pet~fish}X_{own~a~pet~fish} + \beta_1X_1...+\beta_nX_n
-$$
-
-$$
-log(\frac{0.15}{1-0.15}) = \beta_0 + \beta_{own~a~pet~fish}(0) + \beta_1X_1...+\beta_nX_n
-$$
-
-
-
-$$
-log(0.1764) = \beta_0 + \beta_1X_1 + ... + \beta_nX_n
-$$
-
-
-$$
--1.7346 = \beta_0 + \beta_1X_1 + ... + \beta_nX_n
-$$
-
-Using this equation, we can find the predicted probability of someone who does own a pet fish:
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_0 + \beta_{own~a~pet~fish}X_{own~a~pet~fish}+\beta_1X_1+...+\beta_nX_n 
-$$
-
-
-
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_0 + \beta_{own~a~pet~fish}(1)+\beta_1X_1+...+\beta_nX_n 
-$$
-
-
-We can rearrange this equation:
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_{own~a~pet~fish} + (\beta_0 + \beta_1X_1+...+\beta_nX_n)
-$$
-We know what $beta_{own~a~pet~fish}$ is from our model. If **we assume that this person who owns a fish has the same exact qualities as the person who does not own a fish and has a 15% predicted probability of passing**, then:
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = \beta_{own~a~pet~fish} + (-1.7346)
-$$
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = -1.19359 + (-1.7346)
-$$
-
-
-$$
-log(\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}}) = -1.19359 + (-1.7346)
-$$
-
-$$
-\frac{p_{own~a~pet~fish}}{1-p_{own~a~pet~fish}} = e^{-2.92819}
-$$
-
-
-
-$$
-p_{own~a~pet~fish}= 0.05077749
-$$
-
-Therefore, if a student who does not own a pet fish and has a 15% predicted probability of passing Balloon Animal Making 201, then a student who has the exact same qualities, except that they own a pet fish, will have a 5% predicted probability of passing Balloon Animal Making 201.  
-
-This technique, however, requires that we pick and choose arbitrary baselines, and begs the following questions: Which baselines should we even choose, and how many should we present to our audience? We can overcome this picking-and-choosing problem by iterating across every baseline. For example, we can calculate the 0% to 100% predicted probability of passing Balloon Animal Making 201 for a student who does not own a pet fish, and use those baseline values to compute the predicted probability of a student who does own a pet fish and plot these values on a graph. The x-axis values for each point on the curve is the baseline probability i.e., the probability that student does not own a pet fish. The y-axis values for each point on the curve is the probability increase or decrease from the baseline i.e., the probability that the student does own a pet fish. Due to the shape of the curve, we call this graph the banana graph. The different color shades of the curve represent confidence intervals. We also include a solid line which goes diagonally across the middle of the graph as a reference line. When the banana-shaped curve is:
-
-* **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
-* **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
-* **Below the solid line**:the predictor variable has a lower predicted probability of passing than its baseline
-
-In the figure below, you can see that the red, banana-shaped curve is below the solid line, meaning, students who own a pet fish are less likely to pass than students who do not own a pet fish.
+### Banana graphs
 
 ```{r banana_graphs, include = F}
 knitr::read_chunk("visual_folder/banana_graphs.R")
 ```
 
+Even if we present multiple groups, we still have to choose a (possibly arbitrary) baseline for each group. We can overcome this picking-and-choosing problem by iterating across every baseline. For example, we can calculate the 0% to 100% predicted probability of passing Balloon Animal Making 201 for a student who does not own a pet fish, and use those baseline values to compute the predicted probability of a student who does own a pet fish and plot these values on a graph. The x-axis values for each point on the curve is the baseline probability, i.e., the probability that the student does not own a pet fish. The y-axis values for each point on the curve is the probability increase or decrease from the baseline, i.e., the probability that the student does own a pet fish. Due to the shape of the curve, we call this graph the banana graph. We also include a solid line which goes diagonally across the middle of the graph as a reference line. When the banana-shaped curve is:
+
+* **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
+* **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
+* **Below the solid line**: the predictor variable has a lower predicted probability of passing than its baseline
+
+In the figure below, you can see that the banana-shaped curve is below the solid line, meaning, students who own a pet fish are less likely to pass than students who do not own a pet fish.
+
 ```{r create-banana-graph}
 ```
-
 
 ```{r banana-graph-bare}
 ```
 
+However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown below). If your audience is unfamiliar with these graphs it can be overwhelming, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph.
 
-#### Adjustments to enhance the visual
-However, these banana graphs can be difficult for audience members to understand and tricky to explain. To overcome this issue, we suggest that you begin by presenting one banana graph enlarged on the page, choosing one example point, and annotating the graph with how the example point should be interpreted (as shown in the Figure below). If your audience is unfamiliar with these graphs it can be overwhelming for your audience members, and their eyes might gloss over the figures if you begin filling the page with these graphs. Starting with one banana graph and enlarging it prevents your audiences' eyes from wandering and becoming overwhelmed. The annotation provides a concrete example of how the audience should be interpreting each point on the graph. 
-
-
-```{r banana-graph-annotated, fig.width = 9, fig.height = 9}
+```{r banana-graph-annotated}
 ```
 
-
-Once you've helped the audience understand one banana graph, you can then go on to present multiple banana graphs, like so:  
+Once you've helped the audience understand one banana graph, you can then go on to present multiple banana graphs, like so:
 
 ```{r banana-graph-multiple}
 ```
 
+These graphs are perfect for showing the whole range of predicted probabilities. However, the downside to these graphs is, if you're planning on showing the effect of multiple variables, they can take up a great deal of real estate on your report. The banana graphs require one graph per predictor variable. In the case that you must present the effect of many predictor variables, you may overwhelm your audience by the sheer volume of graphs. Additionally, the forest plots in the previous examples could show all the predictors and their effect size in one graph, which means one can easily compare values between any two predictors in one forest plot graph. However, with the banana graphs, you audience's eyes have to dart from one graph to the next to compare any two predictor variables. Another limitation to this visual is that, if it is your audience's first time seeing these banana graphs, then it may be difficult for them to understand. Although we discussed a design layout to overcome this issue, it is still important to think about whether there is a better visual which does not require you to go to certain lengths to explain what the graph is trying to convey.
 
-
-#### Usage and Limitations
-
-These graphs are perfect for showing the whole range of predicted probabilities. However, the downside to these graphs is, if you're planning on showing the effect of multiple variables, they can take up a great deal of real estate on your report. The banana graphs require one graph per predictor variable. In the case that you must present the effect of many predictor variables, you may overwhelm your audience by the sheer volume of graphs. Additionally, the forest plots in the previous examples could show all the predictors and their effect size in one graph, which means one can easily compare values between any two predictors in one forest plot graph. However, with the banana graphs, you audience's eyes have to dart from one graph to the next to compare any two predictor variables. Another limitation to this visual is that, if it is your audience's first time seeing these banana graphs, then it may be difficult for them to understand. Although we discussed a design layout to overcome this issue, it is still important to think about whether there is a better visual which does not require you to go to certain lengths to explain what the graph is trying to convey. 
-
-
-## 4 "The" effect is crystal clear
-
-### 4.1 Conterfactual Visual V1
-Description and explanation
-
-**Pros**
-  
-**Cons**
-  
-**When this graph is appropriate**
-  
-**When this graph is not appropriate**
+# Presenting counterfactual counts
   
 ```{r counterfactuals, include = F}
 knitr::read_chunk("visual_folder/counterfactuals.R")
 ```
 
-```{r counterfactual-visual-one}
+Sometimes stakeholders are interested in a measure that's even more basic than probabilities: the number of times something happens (or doesn't happen).
+
+For example, suppose your stakeholders want to use your analysis to assess the impact of tutoring on pass rates in Balloon Animal-Making 201. Since the tutoring program costs money, they're interested not just in _whether_ tutoring helps students, but _how much_ it helps them. In other words, is the program worth it, or could the money be used more effectively elsewhere? A very direct way to assess the real-world impact of the program is to estimate a literal count: the number of extra students who passed because of tutoring.
+
+### Extra successes
+
+Here's one way to approach this idea. In our dataset, `r format(sum(df$tutoring), big.mark = ",")` students received tutoring; of those, `r format(sum(df$tutoring & df$passed), big.mark = ",")` passed the class. Suppose those students had _not_ received tutoring; in that case, how many students do we think would have passed? In other words, how many "extra" passes did we get because of tutoring?
+
+We can get a simple point estimate by using our model to predict outcomes for the subset of our data where students received tutoring, but with the `tutoring` predictor set to `FALSE` instead of `TRUE` -- in other words, by running a set of counterfactual predictions. But a point estimate doesn't convey the amount of uncertainty around our estimate; we can get confidence intervals by simulating many sets of outcomes and aggregating over them, as follows:
+
+1. Take all observations in the dataset for students who received tutoring.
+2. Set the value of the `tutoring` predictor to `FALSE` for all students.
+2. For each of (1,000, or some other suitably large number) simulations:
+    1. **Account for uncertainty in parameter estimates:** Sample a value for each parameter in the model. We took a sample from the normal distribution with its mean set to the estimated parameter value and its standard deviation set to the standard error.
+    2. Compute the predicted probability of passing for each student using these parameter values.
+    2. **Account for uncertainty in outcomes:** Randomly assign each prediction to "pass" or "fail", weighted by the predicted probability of passing.
+    2. Sum the total number of students predicted to pass. Subtract this total from the number of students who actually passed. This is the predicted number of "extra" passes.
+2. Summarize the distribution of predicted number of extra passing students over all the simulations.
+
+The histogram below shows the results of 1,000 simulations like this for our dataset. Our model estimates that tutoring did indeed increase the number of students who passed -- probably by somewhere around 60-90 students.
+
+```{r extra-passes, message = F}
 ```
 
+If your stakeholders care about the magnitude of an effect in terms of counts, this approach is clear and straightforward; it directly answers the question stakeholders are asking. Its primary drawback is that, even more than other visualizations we've explored, it strongly implies a causal relationship between the predictor and the outcome: we're claiming that the tutoring _caused_ some students to pass who otherwise wouldn't have. Moreover, this approach assumes that the counterfactual makes sense. This is fine for the tutoring predictor; it's reasonable to ask what would have happened if a student hadn't gone to tutoring. But it makes much less sense for other predictors; for example, what does it mean to ask what would have happened if a student's favorite color were red instead of blue?
 
-### 4.2 Counterfactual Visual V2
+Using a histogram to summarize the simulations may not be the best choice if your audience is likely to be distracted by the whole idea of using simulation to estimate uncertainty. The meaning of the y-axis isn't straightforward and will require some explanation.
 
-Description and explanation
+### Extra successes by group
 
-**Pros**
-  
-**Cons**
-  
-**When this graph is appropriate**
-  
-**When this graph is not appropriate**
-  
-```{r counterfactual-visual-two}
+Just as we did with the probability-based approaches above, we can summarize counterfactuals by group for a more fine-grained view of our model's predictions. The following graph shows the number of extra passing students by pet type. To save space, we've flattened the histograms into a caterpillar plot; this has the additional advantage of avoiding a scale that shows the number of simulations, and instead focusing on the range of predictions (which is what we wanted in the first place).
+
+```{r extra-passes-by-group}
 ```
 
+Splitting up the estimates by group has advantages similar to the ones described above for presenting probabilities by group: it shows how the effect varies by group, and if our model had relevant interactions, we would be able to include those.
 
-### 4.3 Counterfactual Visual V3
+It's worth emphasizing that the _kinds_ of differences we see here are different from those we saw in the probability graphs. For example, recall that we saw that tutoring gives a larger percentage point boost to students with fish, because those students started out with a lower baseline probability of passing. But this graph shows that the absolute _number_ of extra passing students with fish is _smaller_ than for other groups; this is because there simply aren't that many students with fish in the first place. Your context will determine which kind of effect is most relevant. Do your stakeholders want to know absolute numbers, so that they can avoid spending resources that won't actually benefit many people? Or do they want to understand whether a particular intervention disproportionately benefits (or harms) certain groups, even if those groups are small?
 
-Description and explanation
+### Potential successes compared to group size
 
-**Pros**
-  
-**Cons**
-  
-**When this graph is appropriate**
-  
-**When this graph is not appropriate**
-  
-```{r counterfactual-visual-three}
+There's an alternative way to present counterfactuals that attempts to show _both_ the effect size for each group _and_ the overall size of that group. For this example, we'll switch the direction of the counterfactual: instead of predicting how many tutored students passed who otherwise wouldn't have, we're going to predict how many _untutored_ students _would have_ passed if they had received tutoring. (Again, we're making a strong causal claim, which may not be appropriate for your model!)
+
+The graph below shows, for each pet type, the number of untutored students with that kind of pet who _actually_ passed the class (red diamonds). It also shows the estimated number of untutored students who _would have_ passed if they had received tutoring (black dots and lines). We can see clearly that our model predicts a benefit from tutoring for all students except dog owners; it also makes clear that the groups have substantially different sizes.
+
+```{r potential-passes-by-group, warning = F}
 ```
 
+This approach is a step towards acknowledging different group sizes, and it also helps put the absolute numbers in context. (50 extra passes is extremely impressive if the baseline was 50, but less so if the baseline was 10,000.) But note that it doesn't convey the size of the _whole_ group, only of the number of passing students in the group. For example, the graph doesn't explain whether the number of passing students with fish is small because there aren't many of them in the first place, or because fish owners are more likely to fail. (In this case it's both, but that won't always be true.) In addition, if you have groups of vastly unequal sizes, then the effects for smaller groups will be squashed at the bottom of the scale and difficult to see.
 
-## Concluding Remarks
+# Conclusion
 
 - If your work and models cannot be understood by the stakeholders for whom you probably built the models for then what was the point of all your work? 
 - Use colors to your advantage, use the layout to your advantage, annotate if it might aid
