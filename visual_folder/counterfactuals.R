@@ -1,16 +1,17 @@
-## ---- counterfactual-visual-one ----
+## ---- extra-passes ----
 # Plot the predicted number of extra "passes" among students who got tutoring,
 # relative to the number we think would have passed if they hadn't gotten
 # tutoring.  Account for uncertainty both in the parameter estimates and in the
 # outcomes for individual observations.
 with(
   list(temp.df = expand.grid(draw = 1:1000,
-                        id = df$id[df$tutoring]) %>%
+                             id = df$id[df$tutoring]) %>%
          left_join(df, by = "id") %>%
          mutate(tutoring = F)),
   {
     temp.df %>%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% coefs.df$est,
+      mutate(mu = model.matrix(pass.m, data = temp.df) %*%
+               rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
              pred = runif(n()) < invlogit(mu)) %>%
       group_by(draw) %>%
       summarise(pred.passed = sum(pred)) %>%
@@ -27,7 +28,7 @@ with(
 )
 
 
-## ---- counterfactual-visual-two ----
+## ---- extra-passes-by-group ----
 # Plot the predicted number of extra "passes" among students who got tutoring,
 # relative to the number we think would have passed if they hadn't gotten
 # tutoring, by group.  Account for uncertainty both in the parameter estimates
@@ -39,7 +40,8 @@ with(
          mutate(tutoring = F)),
   {
     temp.df %>%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% coefs.df$est,
+      mutate(mu = model.matrix(pass.m, data = temp.df) %*%
+               rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
              pred = runif(n()) < invlogit(mu)) %>%
       group_by(pet.type, draw) %>%
       summarise(pred.passed = sum(pred),
@@ -75,7 +77,7 @@ with(
   }
 )
 
-## ---- counterfactual-visual-three ----
+## ---- potential-passes-by-group ----
 # Plot the predicted number of "passes" among students who DIDN'T get tutoring,
 # compared to the number we think would have passed if they HAD gotten tutoring,
 # by group.  Account for uncertainty both in the parameter estimates and in the
@@ -87,7 +89,8 @@ with(
          mutate(tutoring = T)),
   {
     temp.df %>%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% coefs.df$est,
+      mutate(mu = model.matrix(pass.m, data = temp.df) %*%
+               rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
              pred = runif(n()) < invlogit(mu)) %>%
       group_by(pet.type, draw) %>%
       summarise(n.passed = sum(pred),
@@ -122,6 +125,7 @@ with(
            color = "", shape = "",
            title = "Estimated number of untutored students who would have passed with tutoring",
            subtitle = "By type of pet") +
+      expand_limits(y = 0) +
       coord_flip() +
       theme_bw()
   }

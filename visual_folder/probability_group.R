@@ -37,7 +37,7 @@ expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
   labs(x = "", y = "Probability of passing",
-       title = "Estimated relationships between student characteristics and probability of passing",
+       title = "Estimated relationships between student characteristics\nand probability of passing",
        subtitle = "By type of pet") +
   coord_flip() +
   theme_bw() +
@@ -76,7 +76,7 @@ expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
   labs(x = "Probability of passing", y = "",
-       title = "Estimated relationships between student characteristics and probability of passing",
+       title = "Estimated relationships between student characteristics\nand probability of passing",
        subtitle = "By type of pet") +
   theme_bw() +
   theme(legend.pos = "bottom")

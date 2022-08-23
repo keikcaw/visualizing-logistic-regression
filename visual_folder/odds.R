@@ -22,6 +22,6 @@ coefs.df %>%
   scale_color_manual("Relationship to\nodds ratio of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "% change in odds ratio",
-       title = "Estimated relationships between student characteristics and odds ratio of passing") +
+       title = "Estimated relationships between student characteristics\nand odds ratio of passing") +
   coord_flip() +
   theme_bw()
