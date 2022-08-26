@@ -1,0 +1,773 @@
+---
+title: "Visualizing logistic regression results for non-technical audiences"
+author: "Abby Kaplan and Keiko Cawley"
+date: "September 20, 2022"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+`r knitr::opts_knit$set(root.dir='..')`
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(lme4)
+library(logitnorm)
+library(kableExtra)
+library(cowplot)
+library(grid)
+library(gridExtra)
+library(patchwork)
+
+
+```
+
+# Logistic Regression Review
+
+--
+
+- Use a logistic regression to model a binary outcome. 
+
+--
+
+- Examples:
+
+--
+
+  - Did the tutoring program increase pass rates, yes or no?
+
+--
+
+  - Does a tuition discount increase student enrollment, yes or no? 
+
+--
+
+  - Are student who participate in clubs more likely to retain 
+Fall to Fall, yes or no?
+
+--
+- The logistic regression equation:
+$$
+\mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+---
+
+class: inverse, center, middle
+
+# What's the problem?
+
+---
+
+# Just tell me "the" effect
+
+
+Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much.
+
+--
+
+The problem stems from:
+<img src="../figure-html/the_problem.png">
+
+--
+
+We can solve for _p_:
+$$
+\begin{aligned}
+p & = \mbox{logit}^{-1}(\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n) \\ & \\
+& = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}
+\end{aligned}
+$$
+
+---
+
+# Just tell me "the" effect
+
+$$
+\begin{aligned}
+p & = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}
+\end{aligned}
+$$
+
+--
+
+```{r, echo = F, message = F, fig.height = 5, fig.width = 6, fig.align = "center"}
+
+curve <- function(x) (exp(x)/(1+(exp(x))))
+
+set.seed(1500)
+ggplot() +
+  stat_function(fun = curve, color = "#009DD8") +
+  annotate("segment", x = -3, xend = -2, y = invlogit(-3), yend = invlogit(-3),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = -2, xend = -2, y = invlogit(-3), yend = invlogit(-2),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = -3.5, y = 0.3,
+           label = str_wrap("A 1-unit change here leads to a small change in probability",
+                            20)) +
+  annotate("segment", x = 0, xend = 1, y = invlogit(0), yend = invlogit(0),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = 1, xend = 1, y = invlogit(0), yend = invlogit(1),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = 3, y = 0.6,
+           label = str_wrap("A 1-unit change here leads to a large change in probability",
+                            20)) +
+  ylim(0, 1) +
+  xlim(-5, 5) + 
+  ylab("probability (p)") +
+  xlab(label = expression(z~'='~beta[0]+beta[1]~X[1]~'+'~'...+'~beta[n]~X[n]))
+
+```
+
+--
+
+**An observation's position on the curve is contingent on its properties, and the magnitude of effect varies in percentage points in a non-linear way.**
+
+---
+
+# Sample dataset and model
+
+- Our simulated dataset describes students who took Balloon Animal-Making 201 at University Imaginary
+
+--
+
+```{r dataset_summary_table, echo = F}
+table <- data.frame(
+  Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
+  Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
+  Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
+) 
+table %>%
+  kbl(col.names = gsub("[.]", " ", names(table))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+```
+
+--
+
+- Built a logistic regression model: which variables are associated with a student passing the Balloon Animal-Making 
+
+---
+
+class: inverse, center, middle
+# Causality disclaimer
+
+---
+
+class: inverse, center, middle
+# Visualitization Option 1: 
+# Presenting Model Coefficients
+
+---
+
+# Presenting model coefficients
+
+```{r fit_model, include = F, cache = F}
+knitr::read_chunk("R_code/fit_model.R")
+```
+
+```{r load-data, include = F}
+```
+
+```{r model, include = F}
+```
+
+``` {r get-coefficients, include = F}
+```
+
+```{r, echo = F, highlight.output = c(1)}
+coefs.df %>%
+  dplyr::select(-parameter) %>%
+  kbl(col.names = c("Parameter", "Estimate", "Standard error", "z", "p")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+```
+
+---
+
+# Change in the log-odds
+```{r colors, include = F, cache = F}
+knitr::read_chunk("visual_folder/colors.R")
+```
+
+```{r color-palette, include = F}
+```
+
+```{r log_odds, include = F, cache = F}
+knitr::read_chunk("visual_folder/log_odds.R")
+```
+
+```{r change-in-log-odds, echo = F, fig.align='center'}
+```
+
+---
+
+# Change in the log-odds
+
+### Pros
+
+--
+
+- Catalogs which effects are positive, negative, or no effect through the use of **color** and **order**
+
+--
+
+- The numerical values are in one place: the x-axis
+
+--
+
+### Cons
+
+--
+
+- The magnitude of effect is in the log-odds scale
+
+--
+
+  - what is a 0.4 change in the log-odds?
+  
+--
+
+  - is the change between 0.4 and 0.8 log-odds "big" or "small"?
+
+---
+
+# Secret Log-Odds
+
+```{r change-in-log-odds-adjusted-axis, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Secret Log-Odds
+
+.pull-left[
+```{r change-in-log-odds-adjusted-axis, echo = F}
+```
+]
+
+.pull-right[
+- It's a simple adjustment, just relabels the x-axis
+- No unit of measurement to describe their absolute effect size
+- Still will not get a sense of the overall magnitude of effect
+]
+
+---
+
+#  Change in odds ratio
+
+Your audience may be more familiar with the "odds" part of log-odds
+
+--
+
+$$
+\begin{aligned}
+\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) & = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n \\&\\
+\frac{p}{1 - p} & = e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}
+\end{aligned}
+$$
+
+---
+
+# Change in odds ratio
+```{r odds_ratio, include = F, cache = F}
+knitr::read_chunk("visual_folder/odds.R")
+```
+
+```{r odds-ratio-adjusted-axis, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Change in odds ratio
+
+--
+
+## Pros
+
+- Changes in odds might be easier to describe than changes in log-odds
+
+--
+
+## Cons
+--
+
+- Two non-trivial obstacles:
+
+--
+
+  1. Odds are expressed as integer ratios ("3-to-1" or "2-to-5") rather than "3" or "0.4”
+  
+--
+
+  2. Coefficients of your model don't represent odds directly; they represent the *changes* in odds
+  
+--
+
+- The percent change in log odds might be misinterpreted as the absolute probability of the outcome (or the change in its probability)
+
+---
+
+class: inverse, center, middle
+# Visualization Option 2
+# Presenting probabilities
+
+---
+
+# Probabilities relative to some baseline
+
+--
+
+-  Problem with presenting probabilities with logistic regression: the change in percentage points depends on the baseline starting value
+
+--
+
+- We can choose an appropriate baseline probability 
+
+--
+
+- One option for the baseline is to use the overall intercept of the model 
+
+---
+
+# Probabilities relative to some baseline
+
+```{r probability_baseline, include = F}
+knitr::read_chunk("visual_folder/probability_baseline.R")
+```
+
+```{r probability-relative-to-some-baseline-no-arrows, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Probabilities relative to some baseline
+
+
+```{r probability-relative-to-some-baseline-with-arrows, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Probabilities relative to some baseline
+
+--
+
+## Pros
+
+--
+
+- Uses a scale that your audience is already very familiar with: probabilities (expressed as percentages)
+
+--
+
+- Avoids a common, but misleading, way of presenting changes in probabilities: the "percent change" formulation
+
+---
+
+# Probabilities relative to some baseline
+
+--
+
+## Cons
+
+--
+
+- Have to choose a baseline
+
+--
+
+- Representing an "average" student seems reasonable, but the process for doing so depends on how the model is specified:
+
+--
+
+  - the intercept represents a student with average values for the continuous predictors because we standardized those predictors
+  
+--
+
+  - with respect to the categorical predictors, our baseline represents a student who is _not_ actually all that average: it's a student who is not a Mac user, doesn't wear glasses, etc. All of our baseline categories are the most frequent values in the dataset
+
+
+---
+
+# Multiple baselines by group
+
+--
+
+Instead of choosing one baseline we can choose several baselines
+
+---
+
+# Multiple baselines by group
+
+--
+
+```{r probability_group, include = F}
+knitr::read_chunk("visual_folder/probability_group.R")
+```
+
+```{r probability-relative-to-some-baseline-and-group-no-arrows, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Multiple baselines by group
+
+```{r probability-relative-to-some-baseline-and-group-with-arrows, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Multiple baselines by group
+
+--
+
+## Pros
+
+--
+
+- Emphasizes that the baseline we show is a _choice_, and that different students have different baselines
+
+--
+
+- Explicitly shows how the effect of a given predictor varies depending on the baseline
+
+--
+
+- Show different effects by group
+
+--
+
+   - In our example, the larger effect for students with fish is purely a function of their lower baseline
+
+--
+
+  - Imagine a model with true _interactions_ between pet type and other predictors
+
+---
+
+# Multiple baselinse by group
+
+-- 
+
+## Cons
+
+--
+
+- Still have to _choose_ a baseline
+
+
+--
+
+- More cluttered than a single graph
+
+---
+
+# Banana graphs
+
+--
+
+- We can overcome this baseline picking-and-choosing problem by iterating across every baseline.
+
+--
+
+- For example:
+
+--
+
+  - we can calculate the 0% to 100% predicted probability of passing Balloon Animal-Making 201 for a student who does not own a pet fish.
+  
+--
+
+  - use those baseline values to compute the predicted probability of a student who does own a pet fish
+  
+---
+
+# Banana graphs
+
+```{r banana_graphs, include = F}
+knitr::read_chunk("visual_folder/banana_graphs.R")
+```
+
+```{r create-banana-graph, include = F}
+```
+
+```{r banana-graph-bare, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Banana graphs
+
+- **x axis** values for each point on the curve is the baseline probability, i.e., the probability that the student does not own a pet fish
+
+--
+
+- **y axis** values for each point on the curve is the probability increase or decrease from the baseline, i.e., the probability that the student does own a pet fish
+
+--
+
+- **solid line** which goes diagonally across the middle of the graph as a reference line: 
+
+--
+
+  - **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
+  
+--
+  - **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
+  
+--
+
+  - **Below the solid line**: the predictor variable has a lower predicted probability of passing than its baseline
+
+
+---
+
+# Banana graphs
+
+```{r banana-graph-annotated, echo = F, fig.width = 9, fig.align = 'center'}
+```
+
+---
+
+# Banana graphs
+
+```{r banana-graph-multiple, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Banana graphs
+
+--
+
+## Pros
+
+--
+
+- Do not have to pick and choose a baseline &rarr; show the whole range of predicted probabilities
+
+--
+
+## Cons
+
+- Can take up quite a bit of space
+
+--
+
+- Audience's eyes have to dart from one graph to the next to compare any two predictor variables
+
+--
+
+- Initially it could be difficult to understand
+
+---
+
+class: inverse, center, middle
+# Visualization Option 3
+# Presenting counterfactual counts
+
+---
+
+# Presenting counterfactual counts
+
+--
+
+- Sometimes stakeholders are interested in a measure that's even more basic than probabilities: **the number of times something happens (or doesn't happen)**
+
+--
+
+- Example: suppose your stakeholders want to use your analysis to assess the impact of tutoring on pass rates in Balloon Animal-Making 201
+
+--
+
+  - They're interested not just in _whether_ tutoring helps students, but _how much_ it helps them.
+  
+
+---
+
+# Extra successes
+
+## The idea
+
+--
+
+In our dataset, `r format(sum(df$tutoring), big.mark = ",")` students received tutoring; of those, `r format(sum(df$tutoring & df$passed), big.mark = ",")` passed the class. 
+
+--
+
+Suppose those students had _not_ received tutoring; in that case, how many students do we think would have passed? 
+
+--
+
+In other words, how many "extra" passes did we get because of tutoring?
+
+---
+
+# Extra successes
+
+## The approach
+
+--
+
+We can get a simple point estimate by using our model to predict outcomes for the subset of our data where students received tutoring, but with the `tutoring` predictor set to `FALSE` instead of `TRUE` -- in other words, by running a set of counterfactual predictions. 
+
+--
+
+A point estimate doesn't convey the amount of uncertainty around our estimate; we can get confidence intervals by simulating many sets of outcomes and aggregating over them.
+
+---
+
+# Extra successes
+
+```{r counterfactuals, include = F}
+knitr::read_chunk("visual_folder/counterfactuals.R")
+```
+
+```{r extra-passes, message = F, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Extra successes
+
+--
+
+## Pros
+
+--
+
+- This approach is clear and straightforward if your stakeholders care about the magnitude of an effect in terms of counts
+
+--
+
+## Cons
+
+--
+
+- It strongly implies a causal relationship between the predictor and the outcome: we're claiming that the tutoring _caused_ some students to pass who otherwise wouldn't have
+
+--
+
+- Assumes that the counterfactual makes sense
+
+--
+
+- Using a histogram to summarize the simulations: audience might be distracted by the whole idea of using simulation to estimate uncertainty
+
+---
+
+# Extra successes by group
+
+We can summarize counterfactuals by group for a more fine-grained view of our model's predictions
+ 
+---
+
+# Extra successes by group
+
+```{r extra-passes-by-group, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Extra successes by group
+
+--
+
+## Pros
+
+--
+
+-  Avoids a scale that shows the number of simulations, and instead focuses on the range of predictions 
+
+--
+
+- Shows how the effect varies by group
+
+--
+
+## Pro/Con
+
+--
+
+Recall, tutoring gives a larger percentage point boost to students with fish, because those students started out with a lower baseline probability of passing. 
+
+--
+
+But this graph shows that the absolute _number_ of extra passing students with fish is _smaller_ than for other groups; this is because there simply aren't that many students with fish in the first place.
+
+---
+
+# Potential successes compared to group size
+
+--
+
+- Attempt to show _both_ the effect size for each group _and_ the overall size of that group
+
+--
+
+- Switch the direction of the counterfactual: instead of predicting how many tutored students passed who otherwise wouldn't have, we're going to predict how many _untutored_ students _would have_ passed if they had received tutoring
+
+---
+
+# Potential successes compared to group size
+
+```{r potential-passes-by-group, warning = F, echo = F, fig.align = 'center'}
+```
+
+---
+
+# Potential successes compared to group size
+
+--
+
+## Pro
+
+- Step towards acknowledging different group sizes, and it also helps put the absolute numbers in context
+
+--
+
+## Cons
+
+--
+
+- Makes a strong causal claim, which may not be appropriate for your model
+
+--
+
+- Doesn't convey the size of the _whole_ group, only of the number of passing students in the group 
+
+--
+
+- If you have groups of vastly unequal sizes, then the effects for smaller groups will be squashed at the bottom of the scale and difficult to see
+
+---
+
+# Concluding Remarks
+
+--
+
+- There is no right or wrong way, only better and worse ways, so, get creative! 
+
+--
+
+- Knowing your stakeholders as well as the context and purpose of your research should be your guides to determine which visualization is most appropriate
+
+--
+
+- Use colors, the layout, and annotations to your advantage
+
+--
+
+- Share your ideas with others
+
+---
+
+class: inverse, center, middle
+# Thank you
+
+
