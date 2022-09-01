@@ -28,19 +28,22 @@ class: center, middle, inverse, title-slide
 ---
 
 
+class: inverse, center, middle
+
+# Logistic regression review
+
 
 
 
 
 &lt;style type="text/css"&gt;
+.remark-slide-content h1 {
+  margin-bottom: 0em;
+}
 .remark-code {
   font-size: 75% !important;
 }
 &lt;/style&gt;
-
-class: inverse, center, middle
-
-# Logistic regression review
 
 ---
 
@@ -141,15 +144,15 @@ $$
 
 --
 
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-2-1.png" width="432" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-2-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-3-1.png" width="432" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-3-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-4-1.png" width="432" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-4-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -493,23 +496,54 @@ summary(pass.m)$coefficients
 ---
 
 class: inverse, center, middle
-# Visualitization Option 1: 
-# Presenting Model Coefficients
 
----
+# Visualization option 1:
 
 # Presenting model coefficients
 
+---
+
+# Model coefficients
 
 
-&lt;table class="table table-striped table-hover" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+```r
+coefs.df = summary(pass.m)$coefficients %&gt;%
+  data.frame() %&gt;%
+  rownames_to_column("parameter") %&gt;%
+  mutate(
+    pretty.parameter =
+      case_when(parameter == "(Intercept)" ~ "Intercept",
+                grepl("TRUE$", parameter) ~
+                  str_to_title(gsub("TRUE", "", parameter)),
+                grepl("pet\\.type", parameter) ~
+                  paste("Pet:",
+                        str_to_title(gsub("pet\\.type", "", parameter))),
+                grepl("favorite\\.color", parameter) ~
+                  paste("Favorite color:",
+                        str_to_title(gsub("favorite\\.color", "", parameter))),
+                parameter == "cs.prior.gpa" ~
+                  paste("Prior GPA\n(", round(sd(df$prior.gpa), 1),
+                        "-pt increase)", sep = ""),
+                parameter == "cs.height" ~
+                  paste("Height\n(", round(sd(df$height), 1),
+                        "-in increase)", sep = ""))
+  ) %&gt;%
+  dplyr::select(parameter, pretty.parameter, est = Estimate, se = Std..Error,
+                z = z.value, p = Pr...z..)
+```
+
+---
+
+# Coefficients in a table
+
+&lt;table class="table table-striped table-hover" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;"&gt;
  &lt;thead&gt;
   &lt;tr&gt;
-   &lt;th style="text-align:left;"&gt; Parameter &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; Estimate &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; Standard error &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; z &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; p &lt;/th&gt;
+   &lt;th style="text-align:left;text-align: center;"&gt; Parameter &lt;/th&gt;
+   &lt;th style="text-align:right;text-align: center;"&gt; Estimate &lt;/th&gt;
+   &lt;th style="text-align:right;text-align: center;"&gt; Standard error &lt;/th&gt;
+   &lt;th style="text-align:right;text-align: center;"&gt; z &lt;/th&gt;
+   &lt;th style="text-align:right;text-align: center;"&gt; p &lt;/th&gt;
   &lt;/tr&gt;
  &lt;/thead&gt;
 &lt;tbody&gt;
@@ -604,115 +638,394 @@ class: inverse, center, middle
 
 ---
 
-# Change in the log-odds
+# Coefficients in a table
 
-
-
-
-
-
-&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-1.png" width="504" style="display: block; margin: auto;" /&gt;
+![blinking_meme](blinking_meme.jpg)
 
 ---
 
-# Change in the log-odds
+# Color palette
 
-### Pros
 
---
 
-- Catalogs which effects are positive, negative, or no effect through the use of **color** and **order**
 
---
-
-- The numerical values are in one place: the x-axis
-
---
-
-### Cons
-
---
-
-- The magnitude of effect is in the log-odds scale
-
---
-
-  - what is a 0.4 change in the log-odds?
-  
---
-
-  - is the change between 0.4 and 0.8 log-odds "big" or "small"?
+```r
+good.color = "#0571B0"
+neutral.color = "gray"
+bad.color = "#CA0020"
+```
 
 ---
 
-# Secret Log-Odds
+# Change in log-odds
 
-&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-adjusted-axis-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
----
-
-# Secret Log-Odds
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-adjusted-axis-1.png" width="504" /&gt;
+
+```r
+log.odds.p = coefs.df %&gt;%
+  filter(parameter != "(Intercept)") %&gt;%
+  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
+         signif = case_when(p &gt; 0.05 ~ "Not significant",
+                            est &gt; 0 ~ "Positive",
+                            est &lt; 0 ~ "Negative"),
+         signif = fct_relevel(signif, "Positive", "Not significant",
+                              "Negative")) %&gt;%
+  ggplot(aes(x = pretty.parameter, color = signif)) +
+  geom_linerange(aes(ymin = est + (qnorm(0.025) * se),
+                     ymax = est + (qnorm(0.975) * se)),
+                 size = 1) +
+  geom_linerange(aes(ymin = est + (qnorm(0.25) * se),
+                     ymax = est + (qnorm(0.75) * se)),
+                 size = 2) +
+  geom_point(aes(y = est), size = 3) +
+  geom_hline(yintercept = 0) +
+  scale_color_manual("Relationship to\nlog odds of passing",
+                     values = c(good.color, neutral.color, bad.color)) +
+  labs(x = "", y = "Change in log odds",
+       title = "Estimated relationships between\nstudent characteristics\nand log odds of passing") +
+  coord_flip(clip = "off")
+```
 ]
 
 .pull-right[
-- It's a simple adjustment, just relabels the x-axis
-- No unit of measurement to describe their absolute effect size
-- Still will not get a sense of the overall magnitude of effect
+&lt;img src="Powerpoint_presentation_files/figure-html/change_in_log_odds_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
 
+# Change in log-odds: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+- It's clear which relationships are positive and which are negative
+
+{{content}}
+]
+
+--
+
+- The plot has a transparent relationship to the fitted model
+
+---
+
+# Change in log-odds: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Change in log-odds: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+- The magnitude of effect is in the log-odds scale
+
+{{content}}
+]
+
+--
+
+- What is a 0.4 change in the log-odds?
+
+{{content}}
+
+--
+
+- Is the change between 0.4 and 0.8 log-odds "big" or "small"?
+
+{{content}}
+
+--
+
+- You probably don't want to give your audience a tutorial on the inverse logit function
+
+---
+
+# Secret log-odds
+
+.pull-left[
+
+```r
+secret.log.odds.p = coefs.df %&gt;%
+  filter(parameter != "(Intercept)") %&gt;%
+  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
+         signif = case_when(p &gt; 0.05 ~ "Not significant",
+                            est &gt; 0 ~ "Positive",
+                            est &lt; 0 ~ "Negative"),
+         signif = fct_relevel(signif, "Positive", "Not significant", "Negative")) %&gt;%
+  ggplot(aes(x = pretty.parameter, color = signif)) +
+  geom_linerange(aes(ymin = est + (qnorm(0.025) * se), ymax = est + (qnorm(0.975) * se)), size = 1) +
+  geom_linerange(aes(ymin = est + (qnorm(0.25) * se), ymax = est + (qnorm(0.75) * se)), size = 2) +
+  geom_point(aes(y = est), size = 3) +
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(
+*   breaks = c(-1, 0, 1),
+*   labels = c("← Lower",
+*              "Same",
+*              "Higher →")
+  ) +
+  scale_color_manual("Relationship to\nchance of passing",
+                     values = c(good.color, neutral.color, bad.color)) +
+  labs(x = "", y = "Chance of passing",
+       title = "Estimated relationships between\nstudent characteristics\nand chance of passing") +
+  coord_flip()
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/change_in_log_odds_adjusted_axis_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Secret log-odds
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Secret log-odds: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/change_in_log_adds_adjusted_axis_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+- Easy: just relabel the x-axis
+
+{{content}}
+]
+
+--
+
+- No numbers for your audience to misinterpret
+
+---
+
+# Secret log-odds: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+- Can't convey absolute magnitude of an effect
+
+{{content}}
+]
+
+--
+
+- Your audience might ask "where are the numbers?" anyway
+
+---
+
+layout: true
+
 #  Change in odds ratio
 
-Your audience may be more familiar with the "odds" part of log-odds
+- Your audience may be more familiar with the "odds" part of log-odds
+
+---
+
+---
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n$$`
+
+---
+
+`$$\log\left(\boxed{\begin{array}{c}\frac{p}{1 - p}\end{array}}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n$$`
 
 --
 
-$$
-`\begin{aligned}
-\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) &amp; = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n \\&amp;\\
-\frac{p}{1 - p} &amp; = e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}
-\end{aligned}`
-$$
+- Can't we just exponentiate to get the odds?
+
+--
+
+`$$\frac{p}{1 - p} = e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}$$`
+
+--
+
+- Now the effect of a coefficient is multiplicative, not additive
+
+--
+
+`$$\frac{p}{1 - p} = e^{\beta_ix_i} \cdot e^{\beta_0 + \beta_1x_1 + \ldots + \beta_{i-1}x_{i-1} + \beta_{i+1}x_{i+1} + \ldots + \beta_nx_n}$$`
 
 ---
+
+layout: false
 
 # Change in odds ratio
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/odds-ratio-adjusted-axis-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+.pull-left[
+
+```r
+odds.ratio.p = coefs.df %&gt;%
+  filter(parameter != "(Intercept)") %&gt;%
+  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
+         signif = case_when(p &gt; 0.05 ~ "Not significant",
+                            est &gt; 0 ~ "Positive",
+                            est &lt; 0 ~ "Negative"),
+         signif = fct_relevel(signif, "Positive", "Not significant",
+                              "Negative")) %&gt;%
+* mutate(across(matches("est|lower|upper"), ~ exp(.))) %&gt;%
+  ggplot(aes(x = pretty.parameter, color = signif)) +
+  geom_linerange(aes(ymin = est + (qnorm(0.025) * se),
+                     ymax = est + (qnorm(0.975) * se)),
+                 size = 1) +
+  geom_linerange(aes(ymin = est + (qnorm(0.25) * se),
+                     ymax = est + (qnorm(0.75) * se)),
+                 size = 2) +
+  geom_point(aes(y = est), size = 3) +
+  geom_hline(yintercept = 1) +
+* scale_y_continuous(labels = scales::percent_format()) +
+  scale_color_manual("Relationship to\nodds ratio of passing",
+                     values = c(good.color, neutral.color, bad.color)) +
+  labs(x = "", y = "% change in odds ratio",
+       title = "Estimated relationships between\nstudent characteristics\nand odds ratio of passing") +
+  coord_flip() +
+  theme_bw()
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/odds_ratio_adjusted_axis_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
-# Change in odds ratio
+# Change in odds ratio: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Pros
-
+.pull-right[
 - Changes in odds might be easier to describe than changes in log-odds
 
---
-
-## Cons
---
-
-- Two non-trivial obstacles:
+{{content}}
+]
 
 --
 
-  1. Odds are expressed as integer ratios ("3-to-1" or "2-to-5") rather than "3" or "0.4”
-  
+- Still pretty easy: a simple transformation of your model coefficients
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
 --
 
-  2. Coefficients of your model don't represent odds directly; they represent the *changes* in odds
-  
+.pull-right[
+- Not the way we usually describe odds
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+
+  - The unfamiliar format may undo the benefit of using a familiar concept
+
+{{content}}
+]
+
 --
 
-- The percent change in log odds might be misinterpreted as the absolute probability of the outcome (or the change in its probability)
+- Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+
+  - The unfamiliar format may undo the benefit of using a familiar concept
+
+- Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
+
+  - Percent change in odds (200% = double the odds) might be misinterpreted as a probability
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+
+  - The unfamiliar format may undo the benefit of using a familiar concept
+
+- Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
+
+  - Percent change in odds (200% = double the odds) might be misinterpreted as a probability
+
+  - Now we're pretty far removed from familiar scales
+]
 
 ---
 
@@ -742,14 +1055,14 @@ class: inverse, center, middle
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-no-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-no-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Probabilities relative to some baseline
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-with-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-with-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -808,13 +1121,13 @@ Instead of choosing one baseline we can choose several baselines
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-no-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-no-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Multiple baselines by group
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-with-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-with-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -889,7 +1202,7 @@ Instead of choosing one baseline we can choose several baselines
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-bare-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-bare-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -921,13 +1234,13 @@ Instead of choosing one baseline we can choose several baselines
 
 # Banana graphs
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-annotated-1.png" width="648" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-annotated-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Banana graphs
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-multiple-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-multiple-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1016,7 +1329,7 @@ A point estimate doesn't convey the amount of uncertainty around our estimate; w
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1056,7 +1369,7 @@ We can summarize counterfactuals by group for a more fine-grained view of our mo
 
 # Extra successes by group
 
-&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-by-group-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-by-group-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1102,7 +1415,7 @@ But this graph shows that the absolute _number_ of extra passing students with f
 
 # Potential successes compared to group size
 
-&lt;img src="Powerpoint_presentation_files/figure-html/potential-passes-by-group-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/potential-passes-by-group-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 ---
 
