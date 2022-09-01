@@ -10,6 +10,7 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+
 `r knitr::opts_knit$set(root.dir='..')`
 
 ```{r setup, include=FALSE}
@@ -24,35 +25,57 @@ library(cowplot)
 library(grid)
 library(gridExtra)
 library(patchwork)
-
-
+library(knitr)
+theme_set(theme_bw())
+opts_chunk$set(echo = F, message = F, warning = F, error = F, fig.retina = 3)
 ```
 
-# Logistic Regression Review
+```{css}
+.remark-code {
+  font-size: 75% !important;
+}
+```
+
+class: inverse, center, middle
+
+# Logistic regression review
+
+---
+
+# Logistic regression: Binary outcomes
+
+- Use logistic regression to model a binary outcome
 
 --
 
-- Use a logistic regression to model a binary outcome. 
+- Examples from higher education:
 
 --
 
-- Examples:
+  - Did the student pass the class?
 
 --
 
-  - Did the tutoring program increase pass rates, yes or no?
+  - Did the student enroll for another term?
 
 --
 
-  - Does a tuition discount increase student enrollment, yes or no? 
+  - Did the student graduate?
+
+---
+
+# The design of logistic regression
+
+- We want to model the probability that the outcome happened
 
 --
 
-  - Are student who participate in clubs more likely to retain 
-Fall to Fall, yes or no?
+- But probabilities are bounded between 0 and 1
 
 --
-- The logistic regression equation:
+
+- Instead, we model the logit of the probability:
+
 $$
 \mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
 $$
@@ -65,19 +88,34 @@ class: inverse, center, middle
 
 ---
 
+layout: true
+
 # Just tell me "the" effect
 
+- Stakeholders often want to know whether something affects outcomes, and by how much
 
-Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much.
-
---
-
-The problem stems from:
-<img src="../figure-html/the_problem.png">
+---
 
 --
 
-We can solve for _p_:
+- But we don't model probabilities directly
+
+$$
+\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+---
+
+- But we don't model probabilities directly
+
+$$
+\boxed{\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right)} = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+--
+
+- We can solve for _p_:
+
 $$
 \begin{aligned}
 p & = \mbox{logit}^{-1}(\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n) \\ & \\
@@ -87,7 +125,9 @@ $$
 
 ---
 
-# Just tell me "the" effect
+layout: true
+
+# "The" effect is nonlinear in _p_
 
 $$
 \begin{aligned}
@@ -95,51 +135,70 @@ p & = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \be
 \end{aligned}
 $$
 
+---
+
 --
 
-```{r, echo = F, message = F, fig.height = 5, fig.width = 6, fig.align = "center"}
+```{r, fig.height = 5, fig.width = 6, fig.align = "center"}
+logistic.curve.0.p = ggplot() +
+  stat_function(fun = function(x) (exp(x)/(1+(exp(x)))), color = "#009DD8") +
+  scale_x_continuous(expression(beta[0]+beta[1]~X[1]~'+'~'...+'~beta[n]~X[n]),
+                     limits = c(-6, 6), breaks = seq(-6, 6, 2)) +
+  scale_y_continuous("probability (p)", limits = c(0, 1))
+logistic.curve.0.p
+```
 
-curve <- function(x) (exp(x)/(1+(exp(x))))
+---
 
-set.seed(1500)
-ggplot() +
-  stat_function(fun = curve, color = "#009DD8") +
+```{r, fig.height = 5, fig.width = 6, fig.align = "center"}
+logistic.curve.1.p = logistic.curve.0.p +
   annotate("segment", x = -3, xend = -2, y = invlogit(-3), yend = invlogit(-3),
            arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
   annotate("segment", x = -2, xend = -2, y = invlogit(-3), yend = invlogit(-2),
            arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
   annotate("text", x = -3.5, y = 0.3,
            label = str_wrap("A 1-unit change here leads to a small change in probability",
-                            20)) +
+                            20))
+logistic.curve.1.p
+```
+
+---
+
+```{r, fig.height = 5, fig.width = 6, fig.align = "center"}
+logistic.curve.2.p = logistic.curve.1.p +
   annotate("segment", x = 0, xend = 1, y = invlogit(0), yend = invlogit(0),
            arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
   annotate("segment", x = 1, xend = 1, y = invlogit(0), yend = invlogit(1),
            arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
   annotate("text", x = 3, y = 0.6,
            label = str_wrap("A 1-unit change here leads to a large change in probability",
-                            20)) +
-  ylim(0, 1) +
-  xlim(-5, 5) + 
-  ylab("probability (p)") +
-  xlab(label = expression(z~'='~beta[0]+beta[1]~X[1]~'+'~'...+'~beta[n]~X[n]))
-
+                            20))
+logistic.curve.2.p
 ```
-
---
-
-**An observation's position on the curve is contingent on its properties, and the magnitude of effect varies in percentage points in a non-linear way.**
 
 ---
 
+layout: false
+
+class: inverse, center, middle
+
 # Sample dataset and model
+
+---
+
+# Datset
+
+```{r fit_model, include = F, cache = F}
+knitr::read_chunk("R_code/fit_model.R")
+```
 
 - Our simulated dataset describes students who took Balloon Animal-Making 201 at University Imaginary
 
 --
 
-```{r dataset_summary_table, echo = F}
+```{r dataset_summary_table}
 table <- data.frame(
-  Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed (outcome of interest)"),
+  Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed"),
   Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
   Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
 ) 
@@ -148,39 +207,88 @@ table %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
+---
+
+# Dataset
+
+```{r load-data, echo = T}
+```
+
+```{r preview_dataset}
+df %>%
+  head(12) %>%
+  kbl() %>%
+  kable_styling(font_size = 12)
+```
+
+---
+
+# Model
+
+- Dependent variable: did the student pass?
+
 --
 
-- Built a logistic regression model: which variables are associated with a student passing the Balloon Animal-Making 
+- Continuous variables were centered and standardized
+
+```{r prepare-data-continuous, echo = T}
+```
+
+--
+
+- Reference levels for categorical variables:
+
+  - Pet type: none
+
+  - Favorite color: blue
+
+```{r prepare-data-categorical, echo = T}
+```
 
 ---
 
-class: inverse, center, middle
+# Model
+
+```{r model, echo = T}
+```
+
+---
+
+# Model
+
+```{r model, echo = T, highlight.output = c(4, 5, 7, 9, 11, 12, 13)}
+```
+
+---
+
 # Causality disclaimer
 
+- Some visualizations strongly imply a causal interpretation
+
+--
+
+- It's your responsibility to evaluate whether a causal interpretation is appropriate
+
+--
+
+- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
+
 ---
 
 class: inverse, center, middle
-# Visualitization Option 1: 
-# Presenting Model Coefficients
+
+# Visualitization option 1:
+
+# Presenting model coefficients
 
 ---
 
 # Presenting model coefficients
 
-```{r fit_model, include = F, cache = F}
-knitr::read_chunk("R_code/fit_model.R")
-```
-
-```{r load-data, include = F}
-```
-
-```{r model, include = F}
-```
-
 ``` {r get-coefficients, include = F}
 ```
 
-```{r, echo = F, highlight.output = c(1)}
+```{r, highlight.output = c(1)}
 coefs.df %>%
   dplyr::select(-parameter) %>%
   kbl(col.names = c("Parameter", "Estimate", "Standard error", "z", "p")) %>%
@@ -201,7 +309,7 @@ knitr::read_chunk("visual_folder/colors.R")
 knitr::read_chunk("visual_folder/log_odds.R")
 ```
 
-```{r change-in-log-odds, echo = F, fig.align='center'}
+```{r change-in-log-odds, fig.align='center'}
 ```
 
 ---
@@ -238,7 +346,7 @@ knitr::read_chunk("visual_folder/log_odds.R")
 
 # Secret Log-Odds
 
-```{r change-in-log-odds-adjusted-axis, echo = F, fig.align = 'center'}
+```{r change-in-log-odds-adjusted-axis, fig.align = 'center'}
 ```
 
 ---
@@ -246,7 +354,7 @@ knitr::read_chunk("visual_folder/log_odds.R")
 # Secret Log-Odds
 
 .pull-left[
-```{r change-in-log-odds-adjusted-axis, echo = F}
+```{r change-in-log-odds-adjusted-axis}
 ```
 ]
 
@@ -410,14 +518,14 @@ Instead of choosing one baseline we can choose several baselines
 knitr::read_chunk("visual_folder/probability_group.R")
 ```
 
-```{r probability-relative-to-some-baseline-and-group-no-arrows, echo = F, fig.align = 'center'}
+```{r probability-relative-to-some-baseline-and-group-no-arrows, fig.align = 'center'}
 ```
 
 ---
 
 # Multiple baselines by group
 
-```{r probability-relative-to-some-baseline-and-group-with-arrows, echo = F, fig.align = 'center'}
+```{r probability-relative-to-some-baseline-and-group-with-arrows, fig.align = 'center'}
 ```
 
 ---
@@ -496,7 +604,7 @@ knitr::read_chunk("visual_folder/banana_graphs.R")
 ```{r create-banana-graph, include = F}
 ```
 
-```{r banana-graph-bare, echo = F, fig.align = 'center'}
+```{r banana-graph-bare, fig.align = 'center'}
 ```
 
 ---
@@ -529,14 +637,14 @@ knitr::read_chunk("visual_folder/banana_graphs.R")
 
 # Banana graphs
 
-```{r banana-graph-annotated, echo = F, fig.width = 9, fig.align = 'center'}
+```{r banana-graph-annotated, fig.width = 9, fig.align = 'center'}
 ```
 
 ---
 
 # Banana graphs
 
-```{r banana-graph-multiple, echo = F, fig.align = 'center'}
+```{r banana-graph-multiple,fig.align = 'center'}
 ```
 
 ---
@@ -628,7 +736,7 @@ A point estimate doesn't convey the amount of uncertainty around our estimate; w
 knitr::read_chunk("visual_folder/counterfactuals.R")
 ```
 
-```{r extra-passes, message = F, echo = F, fig.align = 'center'}
+```{r extra-passes, fig.align = 'center'}
 ```
 
 ---
@@ -669,7 +777,7 @@ We can summarize counterfactuals by group for a more fine-grained view of our mo
 
 # Extra successes by group
 
-```{r extra-passes-by-group, echo = F, fig.align = 'center'}
+```{r extra-passes-by-group, fig.align = 'center'}
 ```
 
 ---
@@ -716,7 +824,7 @@ But this graph shows that the absolute _number_ of extra passing students with f
 
 # Potential successes compared to group size
 
-```{r potential-passes-by-group, warning = F, echo = F, fig.align = 'center'}
+```{r potential-passes-by-group, fig.align = 'center'}
 ```
 
 ---

@@ -31,31 +31,53 @@ class: center, middle, inverse, title-slide
 
 
 
-# Logistic Regression Review
+
+&lt;style type="text/css"&gt;
+.remark-code {
+  font-size: 75% !important;
+}
+&lt;/style&gt;
+
+class: inverse, center, middle
+
+# Logistic regression review
+
+---
+
+# Logistic regression: Binary outcomes
+
+- Use logistic regression to model a binary outcome
 
 --
 
-- Use a logistic regression to model a binary outcome. 
+- Examples from higher education:
 
 --
 
-- Examples:
+  - Did the student pass the class?
 
 --
 
-  - Did the tutoring program increase pass rates, yes or no?
+  - Did the student enroll for another term?
 
 --
 
-  - Does a tuition discount increase student enrollment, yes or no? 
+  - Did the student graduate?
+
+---
+
+# The design of logistic regression
+
+- We want to model the probability that the outcome happened
 
 --
 
-  - Are student who participate in clubs more likely to retain 
-Fall to Fall, yes or no?
+- But probabilities are bounded between 0 and 1
 
 --
-- The logistic regression equation:
+
+- Instead, we model the logit of the probability:
+
 $$
 \mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
 $$
@@ -68,19 +90,34 @@ class: inverse, center, middle
 
 ---
 
+layout: true
+
 # Just tell me "the" effect
 
+- Stakeholders often want to know whether something affects outcomes, and by how much
 
-Oftentimes stakeholders are interested in whether something has a positive or negative effect and if so, by how much.
-
---
-
-The problem stems from:
-&lt;img src="../figure-html/the_problem.png"&gt;
+---
 
 --
 
-We can solve for _p_:
+- But we don't model probabilities directly
+
+$$
+\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+---
+
+- But we don't model probabilities directly
+
+$$
+\boxed{\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right)} = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+--
+
+- We can solve for _p_:
+
 $$
 `\begin{aligned}
 p &amp; = \mbox{logit}^{-1}(\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n) \\ &amp; \\
@@ -90,7 +127,9 @@ $$
 
 ---
 
-# Just tell me "the" effect
+layout: true
+
+# "The" effect is nonlinear in _p_
 
 $$
 `\begin{aligned}
@@ -98,17 +137,33 @@ p &amp; = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 +
 \end{aligned}`
 $$
 
---
-
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" /&gt;
+---
 
 --
 
-**An observation's position on the curve is contingent on its properties, and the magnitude of effect varies in percentage points in a non-linear way.**
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-2-1.png" width="432" style="display: block; margin: auto;" /&gt;
 
 ---
 
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-3-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-4-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+---
+
+layout: false
+
+class: inverse, center, middle
+
 # Sample dataset and model
+
+---
+
+# Datset
+
+
 
 - Our simulated dataset describes students who took Balloon Animal-Making 201 at University Imaginary
 
@@ -159,21 +214,281 @@ $$
    &lt;td style="text-align:left;"&gt; binary &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Passed (outcome of interest) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Passed &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; TRUE/FALSE &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; binary &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 
---
+---
 
-- Built a logistic regression model: which variables are associated with a student passing the Balloon Animal-Making 
+# Dataset
+
+
+```r
+library(tidyverse)
+df = read.csv("data/course_outcomes.csv", header = T, stringsAsFactors = F)
+```
+
+&lt;table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; mac &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; glasses &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; pet.type &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; favorite.color &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; prior.gpa &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; height &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; tutoring &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; passed &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.86 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 63 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; cat &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; green &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.37 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 66 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; none &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; orange &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 66 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.78 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 68 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; cat &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; blue &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.73 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 67 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; green &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.99 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 61 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; none &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.75 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 62 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.73 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 61 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 9 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; none &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 64 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; orange &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.64 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 62 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 11 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 63 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 12 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; cat &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; green &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.72 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 64 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 
 ---
 
-class: inverse, center, middle
+# Model
+
+- Dependent variable: did the student pass?
+
+--
+
+- Continuous variables were centered and standardized
+
+
+```r
+df = df %&gt;%
+  mutate(
+    cs.prior.gpa = (prior.gpa - mean(prior.gpa)) / sd(prior.gpa),
+    cs.height = (height - mean(height)) / sd(height)
+  )
+```
+
+--
+
+- Reference levels for categorical variables:
+
+  - Pet type: none
+
+  - Favorite color: blue
+
+
+```r
+df = df %&gt;%
+  mutate(
+    pet.type = fct_relevel(pet.type, "none", "dog", "cat", "fish"),
+    favorite.color = fct_relevel(favorite.color, "blue", "red",
+                                 "green", "orange")
+  )
+```
+
+---
+
+# Model
+
+
+```r
+library(lme4)
+pass.m = glm(passed ~ mac + glasses + pet.type + favorite.color + cs.prior.gpa +
+               cs.height + tutoring,
+             data = df, family = binomial(link = "logit"))
+summary(pass.m)$coefficients
+```
+
+```
+##                         Estimate Std. Error    z value      Pr(&gt;|z|)
+## (Intercept)           1.53678432 0.09665694 15.8993682  6.400698e-57
+## macTRUE              -0.04070026 0.08251424 -0.4932514  6.218350e-01
+## glassesTRUE           0.19330654 0.07787099  2.4823948  1.305026e-02
+## pet.typedog          -0.25143138 0.08483778 -2.9636722  3.039919e-03
+## pet.typecat           0.09616174 0.11927784  0.8061995  4.201278e-01
+## pet.typefish         -1.19359401 0.16656361 -7.1659949  7.722363e-13
+## favorite.colorred    -0.03945396 0.09265674 -0.4258078  6.702479e-01
+## favorite.colorgreen  -0.38137532 0.10062190 -3.7901819  1.505370e-04
+## favorite.colororange -0.24204783 0.13900517 -1.7412865  8.163337e-02
+## cs.prior.gpa          1.03092175 0.03887172 26.5211237 5.531945e-155
+## cs.height            -0.25908893 0.03833829 -6.7579681  1.399404e-11
+## tutoringTRUE          0.22698497 0.07583279  2.9932300  2.760416e-03
+```
+
+---
+
+# Model
+
+
+```r
+library(lme4)
+pass.m = glm(passed ~ mac + glasses + pet.type + favorite.color + cs.prior.gpa +
+               cs.height + tutoring,
+             data = df, family = binomial(link = "logit"))
+summary(pass.m)$coefficients
+```
+
+```
+##                         Estimate Std. Error    z value      Pr(&gt;|z|)
+## (Intercept)           1.53678432 0.09665694 15.8993682  6.400698e-57
+## macTRUE              -0.04070026 0.08251424 -0.4932514  6.218350e-01
+*## glassesTRUE           0.19330654 0.07787099  2.4823948  1.305026e-02
+*## pet.typedog          -0.25143138 0.08483778 -2.9636722  3.039919e-03
+## pet.typecat           0.09616174 0.11927784  0.8061995  4.201278e-01
+*## pet.typefish         -1.19359401 0.16656361 -7.1659949  7.722363e-13
+## favorite.colorred    -0.03945396 0.09265674 -0.4258078  6.702479e-01
+*## favorite.colorgreen  -0.38137532 0.10062190 -3.7901819  1.505370e-04
+## favorite.colororange -0.24204783 0.13900517 -1.7412865  8.163337e-02
+*## cs.prior.gpa          1.03092175 0.03887172 26.5211237 5.531945e-155
+*## cs.height            -0.25908893 0.03833829 -6.7579681  1.399404e-11
+*## tutoringTRUE          0.22698497 0.07583279  2.9932300  2.760416e-03
+```
+
+---
+
 # Causality disclaimer
+
+- Some visualizations strongly imply a causal interpretation
+
+--
+
+- It's your responsibility to evaluate whether a causal interpretation is appropriate
+
+--
+
+- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
 
 ---
 
@@ -184,12 +499,6 @@ class: inverse, center, middle
 ---
 
 # Presenting model coefficients
-
-
-
-
-
-
 
 
 
@@ -302,7 +611,7 @@ class: inverse, center, middle
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -338,14 +647,14 @@ class: inverse, center, middle
 
 # Secret Log-Odds
 
-&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-adjusted-axis-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-adjusted-axis-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Secret Log-Odds
 
 .pull-left[
-![](Powerpoint_presentation_files/figure-html/change-in-log-odds-adjusted-axis-1.png)&lt;!-- --&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/change-in-log-odds-adjusted-axis-1.png" width="504" /&gt;
 ]
 
 .pull-right[
@@ -374,7 +683,7 @@ $$
 # Change in odds ratio
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/odds-ratio-adjusted-axis-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/odds-ratio-adjusted-axis-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -433,14 +742,14 @@ class: inverse, center, middle
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-no-arrows-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-no-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Probabilities relative to some baseline
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-with-arrows-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-with-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -499,13 +808,13 @@ Instead of choosing one baseline we can choose several baselines
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-no-arrows-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-no-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Multiple baselines by group
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-with-arrows-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-with-arrows-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -580,7 +889,7 @@ Instead of choosing one baseline we can choose several baselines
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-bare-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-bare-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -612,13 +921,13 @@ Instead of choosing one baseline we can choose several baselines
 
 # Banana graphs
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-annotated-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-annotated-1.png" width="648" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Banana graphs
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-multiple-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-multiple-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -707,7 +1016,7 @@ A point estimate doesn't convey the amount of uncertainty around our estimate; w
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -747,7 +1056,7 @@ We can summarize counterfactuals by group for a more fine-grained view of our mo
 
 # Extra successes by group
 
-&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-by-group-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-by-group-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -793,7 +1102,7 @@ But this graph shows that the absolute _number_ of extra passing students with f
 
 # Potential successes compared to group size
 
-&lt;img src="Powerpoint_presentation_files/figure-html/potential-passes-by-group-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/potential-passes-by-group-1.png" width="504" style="display: block; margin: auto;" /&gt;
 
 ---
 
