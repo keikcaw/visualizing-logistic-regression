@@ -36,4 +36,7 @@ df$passed = invlogit((model.matrix(~ mac + glasses + pet.type + favorite.color +
                                    data = df) %*% unlist(parameters))[,1])
 df$passed = df$passed > runif(nrow(df))
 
-write.csv(df, "data/course_outcomes.csv", row.names = F)
+write.csv(df %>%
+            dplyr::select(id, mac, glasses, pet.type, favorite.color,
+                          prior.gpa, height, tutoring, passed),
+          "data/course_outcomes.csv", row.names = F)
