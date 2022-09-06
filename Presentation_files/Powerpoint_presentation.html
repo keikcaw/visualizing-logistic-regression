@@ -661,23 +661,24 @@ log.odds.p = coefs.df %&gt;%
   filter(parameter != "(Intercept)") %&gt;%
   mutate(
     pretty.parameter = fct_reorder(pretty.parameter, est),
+    lower.95 = est + (qnorm(0.025) * se),
+    lower.50 = est + (qnorm(0.25) * se),
+    upper.50 = est + (qnorm(0.75) * se),
+    upper.95 = est + (qnorm(0.975) * se),
     signif = case_when(p &gt; 0.05 ~ "Not significant",
                        est &gt; 0 ~ "Positive",
                        est &lt; 0 ~ "Negative"),
     signif = fct_relevel(signif, "Positive",
-                         "Not significant", "Negative")
+                         "Not significant",
+                         "Negative")
   ) %&gt;%
   ggplot(aes(x = pretty.parameter, color = signif)) +
-  geom_linerange(
-    aes(ymin = est + (qnorm(0.025) * se),
-        ymax = est + (qnorm(0.975) * se)),
-    size = 1
-  ) +
-  geom_linerange(
-    aes(ymin = est + (qnorm(0.25) * se),
-        ymax = est + (qnorm(0.75) * se)),
-    size = 2
-  ) +
+  geom_linerange(aes(ymin = lower.95,
+                     ymax = upper.95),
+                 size = 1) +
+  geom_linerange(aes(ymin = lower.50,
+                     ymax = upper.50),
+                 size = 2) +
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 0) +
   scale_color_manual(
@@ -765,18 +766,19 @@ secret.log.odds.p = coefs.df %&gt;%
   filter(parameter != "(Intercept)") %&gt;%
   mutate(
     pretty.parameter = fct_reorder(pretty.parameter, est),
+    lower.95 = est + (qnorm(0.025) * se),
+    lower.50 = est + (qnorm(0.25) * se),
+    upper.50 = est + (qnorm(0.75) * se),
+    upper.95 = est + (qnorm(0.975) * se),
     signif = case_when(p &gt; 0.05 ~ "Not significant",
                        est &gt; 0 ~ "Positive",
                        est &lt; 0 ~ "Negative"),
     signif = fct_relevel(signif, "Positive",
-                         "Not significant", "Negative")) %&gt;%
+                         "Not significant",
+                         "Negative")) %&gt;%
   ggplot(aes(x = pretty.parameter, color = signif)) +
-  geom_linerange(aes(ymin = est + (qnorm(0.025) * se),
-                     ymax = est + (qnorm(0.975) * se)),
-                 size = 1) +
-  geom_linerange(aes(ymin = est + (qnorm(0.25) * se),
-                     ymax = est + (qnorm(0.75) * se)),
-                 size = 2) +
+  geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1) +
+  geom_linerange(aes(ymin = lower.50, ymax = upper.50), size = 2) +
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 0) +
   scale_y_continuous(
@@ -896,25 +898,26 @@ odds.ratio.p = coefs.df %&gt;%
   filter(parameter != "(Intercept)") %&gt;%
   mutate(
     pretty.parameter = fct_reorder(pretty.parameter, est),
+    lower.95 = est + (qnorm(0.025) * se),
+    lower.50 = est + (qnorm(0.25) * se),
+    upper.50 = est + (qnorm(0.75) * se),
+    upper.95 = est + (qnorm(0.975) * se),
     signif = case_when(p &gt; 0.05 ~ "Not significant",
                        est &gt; 0 ~ "Positive",
                        est &lt; 0 ~ "Negative"),
     signif = fct_relevel(signif, "Positive",
-                         "Not significant", "Negative")
+                         "Not significant",
+                         "Negative")
   ) %&gt;%
 * mutate(across(matches("est|lower|upper"),
 *               ~ exp(.))) %&gt;%
   ggplot(aes(x = pretty.parameter, color = signif)) +
-  geom_linerange(
-    aes(ymin = est + (qnorm(0.025) * se),
-        ymax = est + (qnorm(0.975) * se)),
-    size = 1
-  ) +
-  geom_linerange(
-    aes(ymin = est + (qnorm(0.25) * se),
-        ymax = est + (qnorm(0.75) * se)),
-    size = 2
-  ) +
+  geom_linerange(aes(ymin = lower.95,
+                     ymax = upper.95),
+                 size = 1) +
+  geom_linerange(aes(ymin = lower.50,
+                     ymax = upper.50),
+                 size = 2) +
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 1) +
   scale_y_continuous(
@@ -1073,16 +1076,16 @@ odds.ratio.p = coefs.df %&gt;%
 ---
 
 class: inverse, center, middle
-# Visualization Option 2
+
+# Visualization option 2:
+
 # Presenting probabilities
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline
 
---
-
--  Problem with presenting probabilities with logistic regression: the change in percentage points depends on the baseline starting value
+-  Problem with probabilities: change in percentage points depends on baseline starting value
 
 --
 
@@ -1090,140 +1093,452 @@ class: inverse, center, middle
 
 --
 
-- One option for the baseline is to use the overall intercept of the model 
+- Options for baseline:
+
+--
+
+  - Model intercept
+
+--
+
+  - Observed outcome % in dataset (similar to intercept if continuous predictors are centered and other coefficients aren't too large)
+
+--
+
+  - Observed outcome % for a certain group (e.g., students with no tutoring)
+
+--
+
+  - Some % that's meaningful in context (e.g., 85% pass rate in typical years)
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline
 
+- Baseline probability: inverse logit of the intercept
 
+`$$p_0 = \mbox{logit}^{-1}(\beta_0)$$`
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-no-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+--
+
+- Probability with discrete predictor `\(i\)`: inverse logit of intercept + predictor coefficient
+
+`$$p_i = \mbox{logit}^{-1}(\beta_0 + \beta_i)$$`
+
+--
+
+- For a continuous predictor `\(j\)`, pick a change in predictor value that makes sense
+
+--
+
+  - One standard deviation
+
+--
+
+  - A context-specific benchmark (e.g., 1 point for GPA, 100 points on the SAT)
+
+--
+
+`$$p_j = \mbox{logit}^{-1}(\beta_0 + \beta_j\Delta x_j)$$`
+
+--
+
+- To show uncertainty, get confidence interval before inverse logit transformation
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-with-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+.pull-left[
+
+```r
+intercept = coefs.df$est[coefs.df$parameter == "(Intercept)"]
+prob.baseline.p = coefs.df %&gt;%
+  filter(parameter != "(Intercept)") %&gt;%
+  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
+         lower.95 = est + (qnorm(0.025) * se),
+         lower.50 = est + (qnorm(0.25) * se),
+         upper.50 = est + (qnorm(0.75) * se),
+         upper.95 = est + (qnorm(0.975) * se),
+         signif = case_when(p &gt; 0.05 ~ "Not significant",
+                            est &gt; 0 ~ "Positive",
+                            est &lt; 0 ~ "Negative"),
+         signif = fct_relevel(signif, "Positive", "Not significant", "Negative")) %&gt;%
+  mutate(across(
+*   matches("est|lower|upper"),
+*   ~ invlogit(. + intercept)
+  )) %&gt;%
+  ggplot(aes(x = pretty.parameter, color = signif)) +
+  geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1) +
+  geom_linerange(aes(ymin = lower.50, ymax = upper.50), size = 2) +
+  geom_point(aes(y = est), size = 3) +
+  geom_hline(
+*   yintercept = invlogit(intercept)
+  ) +
+  scale_y_continuous(
+*   limits = c(0, 1),
+*   labels = scales::percent_format()
+  ) +
+  scale_color_manual("Relationship to\nprobability of passing",
+                     values = c(good.color, neutral.color, bad.color)) +
+  labs(x = "", y = "Probability of passing",
+       title = "Estimated relationships between\nstudent characteristics\nand probability of passing") +
+  coord_flip() +
+  theme_bw()
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/probability_baseline_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+--
+
+- (Uncertainty in intercept is not represented here)
+]
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-20-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Pros
+.pull-right[
+- Familiar scale: probabilities, expressed as percentages
+
+{{content}}
+]
 
 --
 
-- Uses a scale that your audience is already very familiar with: probabilities (expressed as percentages)
-
---
-
-- Avoids a common, but misleading, way of presenting changes in probabilities: the "percent change" formulation
+- Avoids the "percent change" formulation (common but misleading)
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/probability_baseline_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Cons
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+{{content}}
+]
 
 --
 
-- Have to choose a baseline
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+---
+
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-21-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+  - Students who don't use Macs, don't wear glasses, etc.
+]
+
+---
+
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-22-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+  - Students who don't use Macs, don't wear glasses, etc.
+
+  - Not an appropriate choice for all datasets
+
+{{content}}
+]
 
 --
 
-- Representing an "average" student seems reasonable, but the process for doing so depends on how the model is specified:
+- Doesn't show full range of possible effects at different baselines
+
+---
+
+# Probabilities relative to a baseline: Arrows
+
+.pull-left[
+
+```r
+prob.baseline.arrows.p = coefs.df %&gt;%
+  filter(parameter != "(Intercept)") %&gt;%
+  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
+         signif = case_when(p &gt; 0.05 ~ "Not significant",
+                            est &gt; 0 ~ "Positive",
+                            est &lt; 0 ~ "Negative"),
+         signif = fct_relevel(signif, "Positive",
+                              "Not significant",
+                              "Negative"),
+         est = invlogit(est + intercept)) %&gt;%
+* ggplot(aes(x = invlogit(intercept),
+*            xend = est,
+*            y = pretty.parameter,
+*            yend = pretty.parameter,
+*            color = signif)) +
+* geom_segment(
+*   size = 1,
+*   arrow = arrow(length = unit(0.1, "in"),
+*                 type = "closed")
+* ) +
+  geom_vline(xintercept = invlogit(intercept)) +
+  scale_x_continuous(
+    limits = c(0, 1),
+    labels = scales::percent_format()
+  ) +
+  scale_color_manual("Relationship to\nprobability of passing",
+                     values = c(good.color, neutral.color, bad.color)) +
+  labs(x = "Probability of passing", y = "",
+       title = "Estimated relationships between\nstudent characteristics\nand probability of passing") +
+  theme_bw()
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/probability_baseline_arrows_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Probabilities relative to a baseline: Arrows
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-23-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-  - the intercept represents a student with average values for the continuous predictors because we standardized those predictors
-  
+.pull-right[
+- Emphasizes  direction of effect
+
+{{content}}
+]
+
 --
 
-  - with respect to the categorical predictors, our baseline represents a student who is _not_ actually all that average: it's a student who is not a Mac user, doesn't wear glasses, etc. All of our baseline categories are the most frequent values in the dataset
+- Doesn't show uncertainty around estimates
 
+{{content}}
+
+--
+
+- Strong causal implications
 
 ---
 
 # Multiple baselines by group
 
+- Instead of one baseline probability, why not several?
+
 --
 
-Instead of choosing one baseline we can choose several baselines
+- Example: show effect of `\(i\)` for each level of categorical variable `\(j\)`
+
+--
+
+`$$p_{j1} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1})$$`
+
+`$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$`
+
+--
+
+`$$p_{j2} = \mbox{logit}^{-1}(\beta_0 + \beta_{j2})$$`
+
+`$$p_{j2 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j2} + \beta_i)$$`
 
 ---
 
 # Multiple baselines by group
 
---
 
 
+.pull-left[
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-no-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+```r
+prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
+                           other.parameter = coefs.df %&gt;%
+                             filter(!grepl("pet\\.type|Intercept", parameter)) %&gt;%
+                             pull(parameter)) %&gt;%
+  mutate(pet.parameter = paste("pet.type", str_to_lower(pet), sep = "")) %&gt;%
+  left_join(coefs.df, by = c("pet.parameter" = "parameter")) %&gt;%
+  mutate(pretty.parameter = coalesce(pretty.parameter, "Pet: None"),
+         mu = intercept + coalesce(est, 0),
+         baseline.mu = mu) %&gt;%
+  dplyr::select(pet, other.parameter, mu, baseline.mu) %&gt;%
+  left_join(coefs.df, by = c("other.parameter" = "parameter")) %&gt;%
+  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
+         mu = mu + est,
+         lower.95 = mu + (qnorm(0.025) * se),
+         lower.50 = mu + (qnorm(0.25) * se),
+         upper.50 = mu + (qnorm(0.75) * se),
+         upper.95 = mu + (qnorm(0.975) * se),
+         signif = case_when(p &gt; 0.05 ~ "Not significant",
+                            est &gt; 0 ~ "Positive",
+                            est &lt; 0 ~ "Negative"),
+         signif = fct_relevel(signif, "Positive", "Not significant", "Negative")) %&gt;%
+  mutate(across(matches("mu|lower|upper"), ~ invlogit(.))) %&gt;%
+  ggplot(aes(x = pretty.parameter, color = signif)) +
+  geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1) +
+  geom_linerange(aes(ymin = lower.50, ymax = upper.50), size = 2) +
+  geom_point(aes(y = mu), size = 3) +
+  geom_hline(aes(yintercept = baseline.mu)) +
+  scale_y_continuous(limits = c(0, 1), labels = scales::percent_format()) +
+  scale_color_manual("Relationship to\nprobability of passing",
+                     values = c(good.color, neutral.color, bad.color)) +
+  facet_wrap(~ pet) +
+  labs(x = "", y = "Probability of passing", subtitle = "By type of pet",
+       title = "Estimated relationships between\nstudent characteristics\nand probability of passing") +
+  coord_flip()
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/probability_group_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
-# Multiple baselines by group
+# Multiple baselines by group: Pros
 
-&lt;img src="Powerpoint_presentation_files/figure-html/probability-relative-to-some-baseline-and-group-with-arrows-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-24-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+]
 
 ---
 
-# Multiple baselines by group
+# Multiple baselines by group: Pros
 
---
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/probability_group_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
-## Pros
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
 
---
-
-- Emphasizes that the baseline we show is a _choice_, and that different students have different baselines
-
---
-
-- Explicitly shows how the effect of a given predictor varies depending on the baseline
-
---
-
-- Show different effects by group
-
---
-
-   - In our example, the larger effect for students with fish is purely a function of their lower baseline
-
---
-
-  - Imagine a model with true _interactions_ between pet type and other predictors
+- Honors differences among groups
+]
 
 ---
 
-# Multiple baselinse by group
+# Multiple baselines by group: Pros
 
--- 
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-25-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
-## Cons
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-26-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+
+  - Here, this is purely because of fish owners' lower baseline
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-27-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+
+  - Here, this is purely because of fish owners' lower baseline
+
+  - But we could also show the effects of an interaction term in the model
+
+{{content}}
+]
 
 --
 
-- Still have to _choose_ a baseline
+- We can use arrows here as well
 
+---
+
+# Multiple baselines by group: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-28-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-- More cluttered than a single graph
+.pull-right[
+- Still have to choose baselines by group
+
+{{content}}
+]
+
+--
+
+- May suggest essentializing interpretations of groups
+
+{{content}}
+
+--
+
+- Cluttered
 
 ---
 
 # Banana graphs
 
---
-
-- We can overcome this baseline picking-and-choosing problem by iterating across every baseline.
+- We can overcome the baseline-choosing problem by iterating across every baseline
 
 --
 
@@ -1231,11 +1546,15 @@ Instead of choosing one baseline we can choose several baselines
 
 --
 
-  - we can calculate the 0% to 100% predicted probability of passing Balloon Animal-Making 201 for a student who does not own a pet fish.
+  - Start with every possible probability of passing Balloon Animal-Making 201, from 0% to 100% (at sufficiently small intervals)
   
 --
 
-  - use those baseline values to compute the predicted probability of a student who does own a pet fish
+  - For each probability, add the effect of having a pet fish
+
+--
+
+`$$p_f = \mbox{logit}^{-1}(\mbox{logit}(p_0) + \beta_f)$$`
   
 ---
 
@@ -1243,73 +1562,173 @@ Instead of choosing one baseline we can choose several baselines
 
 
 
+.pull-left[
 
+```r
+est = coefs.df$est[coefs.df$parameter == "pet.typefish"]
+se = coefs.df$se[coefs.df$parameter == "pet.typefish"]
+effect.color = case_when(coefs.df$p[coefs.df$parameter == "pet.typefish"] &gt; 0.05 ~ neutral.color,
+                         est &gt; 0 ~ good.color,
+                         T ~ bad.color)
+banana.p = data.frame(x = seq(0.01, 0.99, 0.01),
+                      upper.95 = 0.975,
+                      upper.50 = 0.75,
+                      median = 0.5,
+                      lower.50 = 0.25,
+                      lower.95 = 0.025) %&gt;%
+* mutate(across(matches("median|upper|lower"),
+*               function(q) {
+*                 current.x = get("x")
+*                 invlogit(logit(current.x) +
+*                            est +
+*                            (qnorm(q) * se))
+*               })) %&gt;%
+  ggplot(aes(x = x, group = 1)) +
+  geom_segment(x = 0, xend = 1, y = 0, yend = 1) +
+  geom_ribbon(aes(ymin = lower.95, ymax = upper.95),
+              fill = effect.color, alpha = 0.2) +
+  geom_ribbon(aes(ymin = lower.50, ymax = upper.50),
+              fill = effect.color, alpha = 0.4) +
+  geom_line(aes(y = median), color = effect.color) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Baseline probablity of passing",
+       y = "Probability of passing with effect",
+       title = gsub("\n", " ",
+                    coefs.df$pretty.parameter[coefs.df$parameter == "pet.typefish"]),
+       subtitle = "Estimated relationship to probability of passing")
+```
+]
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-bare-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
 # Banana graphs
 
-- **x axis** values for each point on the curve is the baseline probability, i.e., the probability that the student does not own a pet fish
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-- **y axis** values for each point on the curve is the probability increase or decrease from the baseline, i.e., the probability that the student does own a pet fish
+.pull-right[
+- **x-axis:** baseline probability
+
+{{content}}
+]
 
 --
 
-- **solid line** which goes diagonally across the middle of the graph as a reference line: 
+- **y-axis:** probability with effect of having a pet fish
+
+{{content}}
 
 --
 
-  - **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
-  
---
-  - **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
-  
+- Solid line provides a reference (no effect)
+
+{{content}}
+
 --
 
-  - **Below the solid line**: the predictor variable has a lower predicted probability of passing than its baseline
-
+- Positive effects above the line; negative effects below the line
 
 ---
 
 # Banana graphs
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-annotated-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-left[
+
+```r
+banana.multiple.p =
+* expand.grid(x = seq(0.01, 0.99, 0.01),
+*             pet = c("fish", "dog", "cat")) %&gt;%
+  mutate(pet = paste("pet.type", pet, sep = ""),
+         upper.95 = 0.975,
+         upper.50 = 0.75,
+         median = 0.5,
+         lower.50 = 0.25,
+         lower.95 = 0.025) %&gt;%
+* inner_join(coefs.df,
+*            by = c("pet" = "parameter")) %&gt;%
+  mutate(across(matches("median|upper|lower"),
+                function(q) {
+                  current.x = get("x")
+                  invlogit(logit(current.x) + est + (qnorm(q) * se))
+                })) %&gt;%
+  mutate(effect.color = case_when(p &gt; 0.05 ~ neutral.color,
+                                  est &gt; 0 ~ good.color,
+                                  T ~ bad.color)) %&gt;%
+  ggplot(aes(x = x, color = effect.color, fill = effect.color, group = 1)) +
+  geom_segment(x = 0, xend = 1, y = 0, yend = 1, color = "black") +
+  geom_ribbon(aes(ymin = lower.95, ymax = upper.95), color = NA, alpha = 0.2) +
+  geom_ribbon(aes(ymin = lower.50, ymax = upper.50), color = NA, alpha = 0.4) +
+  geom_line(aes(y = median)) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_color_identity() +
+  scale_fill_identity() +
+  labs(x = "Baseline probablity of passing",
+       y = "Probability of passing with effect",
+       title = "Estimated relationship to\nprobability of passing") +
+* facet_wrap(~ pretty.parameter, ncol = 1)
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_multiple_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
-# Banana graphs
+# Banana graphs: Pros
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana-graph-multiple-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-29-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+- Do not have to pick and choose a baseline
+
+{{content}}
+]
+
+--
+
+- Show the whole range of predicted probabilities
 
 ---
 
-# Banana graphs
+---
+
+# Banana graphs: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-30-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Pros
-
---
-
-- Do not have to pick and choose a baseline &amp;rarr; show the whole range of predicted probabilities
-
---
-
-## Cons
-
+.pull-right[
 - Can take up quite a bit of space
 
+{{content}}
+]
+
 --
 
-- Audience's eyes have to dart from one graph to the next to compare any two predictor variables
+- May be initially difficult to understand
+
+{{content}}
 
 --
 
-- Initially it could be difficult to understand
+- Predictor variables are in separate graphs: hard to compare
 
 ---
 

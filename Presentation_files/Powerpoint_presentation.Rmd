@@ -729,16 +729,16 @@ odds.ratio.p +
 ---
 
 class: inverse, center, middle
-# Visualization Option 2
+
+# Visualization option 2:
+
 # Presenting probabilities
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline
 
---
-
--  Problem with presenting probabilities with logistic regression: the change in percentage points depends on the baseline starting value
+-  Problem with probabilities: change in percentage points depends on baseline starting value
 
 --
 
@@ -746,148 +746,395 @@ class: inverse, center, middle
 
 --
 
-- One option for the baseline is to use the overall intercept of the model 
+- Options for baseline:
+
+--
+
+  - Model intercept
+
+--
+
+  - Observed outcome % in dataset (similar to intercept if continuous predictors are centered and other coefficients aren't too large)
+
+--
+
+  - Observed outcome % for a certain group (e.g., students with no tutoring)
+
+--
+
+  - Some % that's meaningful in context (e.g., 85% pass rate in typical years)
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline
 
-```{r probability_baseline, include = F}
+- Baseline probability: inverse logit of the intercept
+
+$$p_0 = \mbox{logit}^{-1}(\beta_0)$$
+
+--
+
+- Probability with discrete predictor $i$: inverse logit of intercept + predictor coefficient
+
+$$p_i = \mbox{logit}^{-1}(\beta_0 + \beta_i)$$
+
+--
+
+- For a continuous predictor $j$, pick a change in predictor value that makes sense
+
+--
+
+  - One standard deviation
+
+--
+
+  - A context-specific benchmark (e.g., 1 point for GPA, 100 points on the SAT)
+
+--
+
+$$p_j = \mbox{logit}^{-1}(\beta_0 + \beta_j\Delta x_j)$$
+
+--
+
+- To show uncertainty, get confidence interval before inverse logit transformation
+
+---
+
+# Probabilities relative to a baseline
+
+```{r probability_baseline, include = F, cache = F}
 knitr::read_chunk("visual_folder/probability_baseline.R")
 ```
 
-```{r probability-relative-to-some-baseline-no-arrows, echo = F, fig.align = 'center'}
+.pull-left[
+```{r probability-relative-to-some-baseline-no-arrows, echo = T, fig.show = "hide"}
+```
+]
+
+.pull-right[
+```{r probability_baseline_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+prob.baseline.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 1), clip = "off")
 ```
 
+--
+
+- (Uncertainty in intercept is not represented here)
+]
+
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline: Pros
 
-
-```{r probability-relative-to-some-baseline-with-arrows, echo = F, fig.align = 'center'}
+.pull-left[
+```{r ref.label = "probability_baseline_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
 ```
+]
+
+--
+
+.pull-right[
+- Familiar scale: probabilities, expressed as percentages
+
+{{content}}
+]
+
+--
+
+- Avoids the "percent change" formulation (common but misleading)
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+```{r probability_baseline_highlighted_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+prob.baseline.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 1), clip = "off") +
+  annotate("rect", ymin = invlogit(intercept) - 0.05,
+           ymax = invlogit(intercept) + 0.05, xmin = 0, xmax = 12,
+           fill = NA, color = "red", size = 2)
+```
+]
 
 --
 
-## Pros
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+{{content}}
+]
 
 --
 
-- Uses a scale that your audience is already very familiar with: probabilities (expressed as percentages)
-
---
-
-- Avoids a common, but misleading, way of presenting changes in probabilities: the "percent change" formulation
+- Using the intercept as a baseline chooses reference categories for categorical variables
 
 ---
 
-# Probabilities relative to some baseline
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+```{r ref.label = "probability_baseline_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+  - Students who don't use Macs, don't wear glasses, etc.
+]
+
+---
+
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+```{r ref.label = "probability_baseline_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+  - Students who don't use Macs, don't wear glasses, etc.
+
+  - Not an appropriate choice for all datasets
+
+{{content}}
+]
 
 --
 
-## Cons
+- Doesn't show full range of possible effects at different baselines
+
+---
+
+# Probabilities relative to a baseline: Arrows
+
+.pull-left[
+```{r probability-relative-to-some-baseline-with-arrows, echo = T, fig.show = "hide"}
+```
+]
+
+.pull-right[
+```{r probability_baseline_arrows_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+prob.baseline.arrows.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0.9, 11.1), clip = "off")
+```
+]
+
+---
+
+# Probabilities relative to a baseline: Arrows
+
+.pull-left[
+```{r ref.label = "probability_baseline_arrows_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
 
 --
 
-- Have to choose a baseline
+.pull-right[
+- Emphasizes  direction of effect
+
+{{content}}
+]
 
 --
 
-- Representing an "average" student seems reasonable, but the process for doing so depends on how the model is specified:
+- Doesn't show uncertainty around estimates
+
+{{content}}
 
 --
 
-  - the intercept represents a student with average values for the continuous predictors because we standardized those predictors
-  
---
-
-  - with respect to the categorical predictors, our baseline represents a student who is _not_ actually all that average: it's a student who is not a Mac user, doesn't wear glasses, etc. All of our baseline categories are the most frequent values in the dataset
-
+- Strong causal implications
 
 ---
 
 # Multiple baselines by group
 
+- Instead of one baseline probability, why not several?
+
 --
 
-Instead of choosing one baseline we can choose several baselines
+- Example: show effect of $i$ for each level of categorical variable $j$
+
+--
+
+$$p_{j1} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1})$$
+
+$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$
+
+--
+
+$$p_{j2} = \mbox{logit}^{-1}(\beta_0 + \beta_{j2})$$
+
+$$p_{j2 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j2} + \beta_i)$$
 
 ---
 
 # Multiple baselines by group
-
---
 
 ```{r probability_group, include = F}
 knitr::read_chunk("visual_folder/probability_group.R")
 ```
 
-```{r probability-relative-to-some-baseline-and-group-no-arrows, fig.align = 'center'}
+.pull-left[
+```{r probability-relative-to-some-baseline-and-group-no-arrows, echo = T, fig.show = "hide"}
 ```
+]
 
----
-
-# Multiple baselines by group
-
-```{r probability-relative-to-some-baseline-and-group-with-arrows, fig.align = 'center'}
+.pull-right[
+```{r probability_group_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.4, fig.retina = 6}
+prob.group.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 8.1),  ylim = c(0, 1), clip = "off")
 ```
+]
 
 ---
 
-# Multiple baselines by group
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r ref.label = "probability_group_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
 
 --
 
-## Pros
-
---
-
-- Emphasizes that the baseline we show is a _choice_, and that different students have different baselines
-
---
-
-- Explicitly shows how the effect of a given predictor varies depending on the baseline
-
---
-
-- Show different effects by group
-
---
-
-   - In our example, the larger effect for students with fish is purely a function of their lower baseline
-
---
-
-  - Imagine a model with true _interactions_ between pet type and other predictors
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+]
 
 ---
 
-# Multiple baselinse by group
+# Multiple baselines by group: Pros
 
--- 
+.pull-left[
+```{r probability_group_highlighted_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+prob.group.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 8.1),  ylim = c(0, 1), clip = "off") +
+  annotate("rect", xmin = 7.5, xmax = 8.5, ymin = 0.01, ymax = 0.99,
+           fill = NA, color = "red", size = 1)
+```
+]
 
-## Cons
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r ref.label = "probability_group_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r ref.label = "probability_group_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+
+  - Here, this is purely because of fish owners' lower baseline
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r ref.label = "probability_group_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+
+  - Here, this is purely because of fish owners' lower baseline
+
+  - But we could also show the effects of an interaction term in the model
+
+{{content}}
+]
 
 --
 
-- Still have to _choose_ a baseline
+- We can use arrows here as well
 
+---
+
+# Multiple baselines by group: Cons
+
+.pull-left[
+```{r ref.label = "probability_group_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
 
 --
 
-- More cluttered than a single graph
+.pull-right[
+- Still have to choose baselines by group
+
+{{content}}
+]
+
+--
+
+- May suggest essentializing interpretations of groups
+
+{{content}}
+
+--
+
+- Cluttered
 
 ---
 
 # Banana graphs
 
---
-
-- We can overcome this baseline picking-and-choosing problem by iterating across every baseline.
+- We can overcome the baseline-choosing problem by iterating across every baseline
 
 --
 
@@ -895,11 +1142,15 @@ knitr::read_chunk("visual_folder/probability_group.R")
 
 --
 
-  - we can calculate the 0% to 100% predicted probability of passing Balloon Animal-Making 201 for a student who does not own a pet fish.
+  - Start with every possible probability of passing Balloon Animal-Making 201, from 0% to 100% (at sufficiently small intervals)
   
 --
 
-  - use those baseline values to compute the predicted probability of a student who does own a pet fish
+  - For each probability, add the effect of having a pet fish
+
+--
+
+$$p_f = \mbox{logit}^{-1}(\mbox{logit}(p_0) + \beta_f)$$
   
 ---
 
@@ -909,77 +1160,130 @@ knitr::read_chunk("visual_folder/probability_group.R")
 knitr::read_chunk("visual_folder/banana_graphs.R")
 ```
 
-```{r create-banana-graph, include = F}
+.pull-left[
+```{r banana-graph, echo = T, fig.show = "hide"}
 ```
+]
 
-```{r banana-graph-bare, fig.align = 'center'}
+.pull-right[
+```{r banana_graph_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+banana.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off")
 ```
+]
 
 ---
 
 # Banana graphs
 
-- **x axis** values for each point on the curve is the baseline probability, i.e., the probability that the student does not own a pet fish
-
---
-
-- **y axis** values for each point on the curve is the probability increase or decrease from the baseline, i.e., the probability that the student does own a pet fish
-
---
-
-- **solid line** which goes diagonally across the middle of the graph as a reference line: 
-
---
-
-  - **Above the solid line**: the predictor variable has a higher predicted probability of passing than its baseline
-  
---
-  - **On the solid line**: the predictor variable has the same predicted probability of passing as its baseline
-  
---
-
-  - **Below the solid line**: the predictor variable has a lower predicted probability of passing than its baseline
-
-
----
-
-# Banana graphs
-
-```{r banana-graph-annotated, fig.width = 9, fig.align = 'center'}
+.pull-left[
+```{r banana_graph_highlighted_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+banana.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off") +
+  annotate("segment", x = 0.4, xend = 0.4, y = 0.4,
+           yend = invlogit(logit(0.4) +
+                             coefs.df$est[coefs.df$parameter == "pet.typefish"]),
+           color = "black", size = 0.5,
+           arrow = arrow(type = "closed", length = unit(0.02, units = "npc"))) +
+  annotate("text", x = 0.1, y = 0.7, size = 2.90, hjust = 0,
+           label = str_wrap(paste("Some student who does not own a pet fish has a 40% chance of passing (x-axis value).",
+                                  " However, if that same student did own a pet fish,",
+                                  " their predicted probability of passing would be ",
+                                  round(invlogit(logit(0.4) +
+                                                   coefs.df$est[coefs.df$parameter == "pet.typefish"]) * 100),
+                                  "% (y-axis value).",
+                                  sep = ""),
+                            30))
 ```
+]
+
+--
+
+.pull-right[
+- **x-axis:** baseline probability
+
+{{content}}
+]
+
+--
+
+- **y-axis:** probability with effect of having a pet fish
+
+{{content}}
+
+--
+
+- Solid line provides a reference (no effect)
+
+{{content}}
+
+--
+
+- Positive effects above the line; negative effects below the line
 
 ---
 
 # Banana graphs
 
-```{r banana-graph-multiple,fig.align = 'center'}
+.pull-left[
+```{r banana-graph-multiple, echo = T, fig.show = "hide"}
 ```
+]
+
+.pull-right[
+```{r banana_graph_multiple_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+banana.multiple.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off")
+```
+]
 
 ---
 
-# Banana graphs
+# Banana graphs: Pros
+
+.pull-left[
+```{r ref.label = "banana_graph_multiple_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
 
 --
 
-## Pros
+.pull-right[
+- Do not have to pick and choose a baseline
+
+{{content}}
+]
 
 --
 
-- Do not have to pick and choose a baseline &rarr; show the whole range of predicted probabilities
+- Show the whole range of predicted probabilities
+
+---
+
+# Banana graphs: Cons
+
+.pull-left[
+```{r ref.label = "banana_graph_multiple_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```
+]
 
 --
 
-## Cons
-
+.pull-right[
 - Can take up quite a bit of space
 
+{{content}}
+]
+
 --
 
-- Audience's eyes have to dart from one graph to the next to compare any two predictor variables
+- May be initially difficult to understand
+
+{{content}}
 
 --
 
-- Initially it could be difficult to understand
+- Predictor variables are in separate graphs: hard to compare
 
 ---
 

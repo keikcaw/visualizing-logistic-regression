@@ -1,17 +1,13 @@
 ## ---- probability-relative-to-some-baseline-and-group-no-arrows ----
-# Plot probability of passing relative to "baseline" probability for several
-# groups (with confidence intervals).  Note that these probability estimates
-# ignore the uncertainty in the estimates of the intercept and the group
-# parameters.
-expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
-            other.parameter = coefs.df %>%
-              filter(!grepl("pet\\.type|Intercept", parameter)) %>%
-              pull(parameter)) %>%
+
+prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
+                           other.parameter = coefs.df %>%
+                             filter(!grepl("pet\\.type|Intercept", parameter)) %>%
+                             pull(parameter)) %>%
   mutate(pet.parameter = paste("pet.type", str_to_lower(pet), sep = "")) %>%
   left_join(coefs.df, by = c("pet.parameter" = "parameter")) %>%
   mutate(pretty.parameter = coalesce(pretty.parameter, "Pet: None"),
-         mu = coefs.df$est[coefs.df$parameter == "(Intercept)"] +
-           coalesce(est, 0),
+         mu = intercept + coalesce(est, 0),
          baseline.mu = mu) %>%
   dplyr::select(pet, other.parameter, mu, baseline.mu) %>%
   left_join(coefs.df, by = c("other.parameter" = "parameter")) %>%
@@ -24,8 +20,7 @@ expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
          signif = case_when(p > 0.05 ~ "Not significant",
                             est > 0 ~ "Positive",
                             est < 0 ~ "Negative"),
-         signif = fct_relevel(signif, "Positive", "Not significant",
-                              "Negative")) %>%
+         signif = fct_relevel(signif, "Positive", "Not significant", "Negative")) %>%
   mutate(across(matches("mu|lower|upper"), ~ invlogit(.))) %>%
   ggplot(aes(x = pretty.parameter, color = signif)) +
   geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1) +
@@ -36,20 +31,16 @@ expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
   scale_color_manual("Relationship to\nprobability of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
-  labs(x = "", y = "Probability of passing",
-       title = "Estimated relationships between student characteristics\nand probability of passing",
-       subtitle = "By type of pet") +
-  coord_flip() +
-  theme_bw() +
-  theme(legend.pos = "bottom")
+  labs(x = "", y = "Probability of passing", subtitle = "By type of pet",
+       title = "Estimated relationships between\nstudent characteristics\nand probability of passing") +
+  coord_flip()
 
 ## ---- probability-relative-to-some-baseline-and-group-with-arrows ----
-# Plot probability of passing relative to "baseline" probability for several
-# groups (with arrows).
-expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
-            other.parameter = coefs.df %>%
-              filter(!grepl("pet\\.type|Intercept", parameter)) %>%
-              pull(parameter)) %>%
+
+prob.group.arrows.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
+                                  other.parameter = coefs.df %>%
+                                    filter(!grepl("pet\\.type|Intercept", parameter)) %>%
+                                    pull(parameter)) %>%
   mutate(pet.parameter = paste("pet.type", str_to_lower(pet), sep = "")) %>%
   left_join(coefs.df, by = c("pet.parameter" = "parameter")) %>%
   mutate(pretty.parameter = coalesce(pretty.parameter, "Pet: None"),
@@ -76,7 +67,6 @@ expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
   labs(x = "Probability of passing", y = "",
-       title = "Estimated relationships between student characteristics\nand probability of passing",
+       title = "Estimated relationships between\nstudent characteristics\nand probability of passing",
        subtitle = "By type of pet") +
-  theme_bw() +
-  theme(legend.pos = "bottom")
+  theme_bw()
