@@ -1704,8 +1704,6 @@ banana.multiple.p =
 
 ---
 
----
-
 # Banana graphs: Cons
 
 .pull-left[
@@ -1733,57 +1731,62 @@ banana.multiple.p =
 ---
 
 class: inverse, center, middle
-# Visualization Option 3
-# Presenting counterfactual counts
 
----
+# Visualization option 3:
 
-# Presenting counterfactual counts
-
---
-
-- Sometimes stakeholders are interested in a measure that's even more basic than probabilities: **the number of times something happens (or doesn't happen)**
-
---
-
-- Example: suppose your stakeholders want to use your analysis to assess the impact of tutoring on pass rates in Balloon Animal-Making 201
-
---
-
-  - They're interested not just in _whether_ tutoring helps students, but _how much_ it helps them.
-  
+# Counterfactual counts
 
 ---
 
 # Extra successes
 
-## The idea
+- Sometimes stakeholders are interested in **the number of times something happens (or doesn't happen)**
 
 --
 
-In our dataset, 2,571 students received tutoring; of those, 2,023 passed the class. 
+- Example: stakeholders want to assess the impact of tutoring on pass rates in Balloon Animal-Making 201
 
 --
 
-Suppose those students had _not_ received tutoring; in that case, how many students do we think would have passed? 
+  - They're interested not just in _whether_ tutoring helps students, but _how much_ it helps them
 
 --
 
-In other words, how many "extra" passes did we get because of tutoring?
+  - In our dataset, 2,571 students received tutoring; of those, 2,023 passed the class
+
+--
+
+  - Suppose those students had _not_ received tutoring; in that case, how many would have passed? 
+
+--
+
+  - In other words, how many "extra" passes did we get because of tutoring?
 
 ---
 
 # Extra successes
 
-## The approach
+- To get a point estimate:
 
 --
 
-We can get a simple point estimate by using our model to predict outcomes for the subset of our data where students received tutoring, but with the `tutoring` predictor set to `FALSE` instead of `TRUE` -- in other words, by running a set of counterfactual predictions. 
+  - Take all students who received tutoring
 
 --
 
-A point estimate doesn't convey the amount of uncertainty around our estimate; we can get confidence intervals by simulating many sets of outcomes and aggregating over them.
+  - Set `tutoring` to `FALSE` instead of `TRUE`
+
+--
+
+  - Use the model to make (counterfactual) predictions for the revised dataset
+
+--
+
+  - Count predicted counterfactual passes; compare to the actual number of passes
+
+--
+
+- We can get confidence intervals by simulating many sets of outcomes and aggregating over them.
 
 ---
 
@@ -1791,75 +1794,212 @@ A point estimate doesn't convey the amount of uncertainty around our estimate; w
 
 
 
-&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-left[
+
+```r
+extra.p = with(
+  list(
+*   temp.df = expand.grid(
+*     draw = 1:10000,
+*     id = df$id[df$tutoring]
+*   ) %&gt;%
+*     left_join(df, by = "id") %&gt;%
+*     mutate(tutoring = F)
+  ),
+  {
+    temp.df %&gt;%
+      mutate(
+*       mu = model.matrix(pass.m,
+*                         data = temp.df) %*%
+*         rnorm(nrow(coefs.df),
+*               mean = coefs.df$est,
+*               sd = coefs.df$se),
+*       pred = runif(n()) &lt; invlogit(mu)
+      ) %&gt;%
+      group_by(draw) %&gt;%
+      summarise(pred.passed = sum(pred)) %&gt;%
+      ungroup() %&gt;%
+*     mutate(extra.passed =
+*              sum(df$passed &amp; df$tutoring)
+*              - pred.passed) %&gt;%
+      ggplot(aes(x = extra.passed)) +
+      geom_histogram(fill = "gray") +
+      geom_vline(xintercept = 0) +
+      labs(x = "Number of extra students\nwho passed because of tutoring",
+           y = "Number of simulations",
+           title = "Estimated number of extra students\nwho passed because of tutoring")
+  }
+)
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/extra_passes_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
-# Extra successes
+# Extra successes: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Pros
+.pull-right[
+- Counts have a straightforward interpretation
+
+{{content}}
+]
 
 --
 
-- This approach is clear and straightforward if your stakeholders care about the magnitude of an effect in terms of counts
+- Natural baseline: account for other characteristics of your population (e.g., number of fish owners)
+
+---
+
+# Extra successes: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Cons
+.pull-right[
+- "Number of simulations" may be hard to explain
 
---
-
-- It strongly implies a causal relationship between the predictor and the outcome: we're claiming that the tutoring _caused_ some students to pass who otherwise wouldn't have
+{{content}}
+]
 
 --
 
 - Assumes that the counterfactual makes sense
 
+{{content}}
+
 --
 
-- Using a histogram to summarize the simulations: audience might be distracted by the whole idea of using simulation to estimate uncertainty
+- Strong cauasal interpretation
+
+{{content}}
+
+--
+
+- Range of uncertainty depends in part on how many simulations you run
 
 ---
 
 # Extra successes by group
 
-We can summarize counterfactuals by group for a more fine-grained view of our model's predictions
+- Your stakeholders may be interested in different effects by group
+
+--
+
+- We can summarize counterfactuals for separate groups
  
 ---
 
 # Extra successes by group
 
-&lt;img src="Powerpoint_presentation_files/figure-html/extra-passes-by-group-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-left[
+
+```r
+extra.group.p = with(
+  list(temp.df = expand.grid(draw = 1:10000,
+                             id = df$id[df$tutoring]) %&gt;%
+         left_join(df, by = "id") %&gt;% mutate(tutoring = F)),
+  { temp.df %&gt;%
+      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
+             pred = runif(n()) &lt; invlogit(mu)) %&gt;%
+*     group_by(pet.type, draw) %&gt;%
+      summarise(pred.passed = sum(pred), .groups = "keep") %&gt;%
+      ungroup() %&gt;%
+*     left_join(df %&gt;%
+*                 filter(tutoring) %&gt;%
+*                 group_by(pet.type) %&gt;%
+*                 summarise(actual.passed =
+*                             sum(passed)) %&gt;%
+*                 ungroup(),
+*               by = "pet.type") %&gt;%
+      mutate(pet.type = str_to_title(pet.type), extra.passed = actual.passed - pred.passed) %&gt;%
+      group_by(pet.type) %&gt;%
+      summarise(lower.95 = quantile(extra.passed, 0.025),
+                lower.50 = quantile(extra.passed, 0.25),
+                median = median(extra.passed),
+                upper.50 = quantile(extra.passed, 0.75),
+                upper.95 = quantile(extra.passed, 0.975)) %&gt;%
+      ungroup() %&gt;%
+      mutate(pet.type = fct_reorder(pet.type, median)) %&gt;%
+      ggplot(aes(x = pet.type)) +
+      geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1) +
+      geom_linerange(aes(ymin = lower.50, ymax = upper.50), size = 2) +
+      geom_point(aes(y = median), size = 3) +
+      geom_hline(yintercept = 0) +
+      labs(subtitle = "By type of pet", x = "Pet type",
+           y = "Number of extra students\nwho passed because of tutoring",
+           title = "Estimated number of extra students\nwho passed because of tutoring") +
+      coord_flip() }
+)
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/extra_passes_group_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
-# Extra successes by group
+# Extra successes by group: Pros
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Pros
+.pull-right[
+- Avoids a scale with number of simulations; focus is on range of predictions
+
+{{content}}
+]
 
 --
 
--  Avoids a scale that shows the number of simulations, and instead focuses on the range of predictions 
+- Shows differences by group
+
+{{content}}
 
 --
 
-- Shows how the effect varies by group
+- Interaction terms in the model would be incorporated automatically
+
+---
+
+# Extra successes by group: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Pro/Con
+.pull-right[
+- Doesn't show how absolute numbers depend on group size
+
+{{content}}
+]
 
 --
 
-Recall, tutoring gives a larger percentage point boost to students with fish, because those students started out with a lower baseline probability of passing. 
+- Tutoring actually has a _larger_ percentage point effect for fish owners (because of the lower baseline), but the group is small
+
+{{content}}
 
 --
 
-But this graph shows that the absolute _number_ of extra passing students with fish is _smaller_ than for other groups; this is because there simply aren't that many students with fish in the first place.
+- (Your audience may care about counts, percentages, or both)
 
 ---
 
@@ -1871,47 +2011,100 @@ But this graph shows that the absolute _number_ of extra passing students with f
 
 --
 
-- Switch the direction of the counterfactual: instead of predicting how many tutored students passed who otherwise wouldn't have, we're going to predict how many _untutored_ students _would have_ passed if they had received tutoring
+- Here, we switch the direction of the counterfactual
+
+--
+
+  - Start with untutored students
+
+--
+
+  - How many would have passed with tutoring?
+
+--
+
+  - We think this emphasizes the benefits of tutoring more clearly in this graph
+
+--
+
+  - Either direction is possible; do what makes sense in your context!
 
 ---
 
 # Potential successes compared to group size
 
-&lt;img src="Powerpoint_presentation_files/figure-html/potential-passes-by-group-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+.pull-left[
+
+```r
+potential.group.p = with(
+  list(
+*   temp.df = expand.grid(
+*     draw = 1:10000,
+*     id = df$id[!df$tutoring]
+*   ) %&gt;%
+*     left_join(df, by = "id") %&gt;%
+*     mutate(tutoring = T)
+  ),
+  { temp.df %&gt;%
+      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se), pred = runif(n()) &lt; invlogit(mu)) %&gt;%
+      group_by(pet.type, draw) %&gt;%
+*     summarise(n.passed = sum(pred),
+*               .groups = "keep") %&gt;%
+      ungroup() %&gt;%
+      group_by(pet.type) %&gt;%
+      summarise(lower.95 = quantile(n.passed, 0.025), lower.50 = quantile(n.passed, 0.25), upper.50 = quantile(n.passed, 0.75), upper.95 = quantile(n.passed, 0.975), n.passed = median(n.passed)) %&gt;%
+      ungroup() %&gt;%
+*     mutate(pass.type = "Predicted") %&gt;%
+*     bind_rows(
+*       df %&gt;%
+*         filter(!tutoring) %&gt;%
+*         group_by(pet.type) %&gt;%
+*         summarise(n.passed = sum(passed)) %&gt;%
+*         ungroup() %&gt;%
+*         mutate(pass.type = "Actual")
+*     ) %&gt;%
+      mutate(pet.type = str_to_title(pet.type), pet.type = fct_reorder(pet.type, n.passed, max)) %&gt;%
+      ggplot(aes(x = pet.type, color = pass.type, shape = pass.type)) +
+      geom_linerange(aes(ymin = lower.95, ymax = upper.95), size = 1, show.legend = F) + geom_linerange(aes(ymin = lower.50, ymax = upper.50), size = 2, show.legend = F) +
+      geom_point(aes(y = n.passed), size = 3) +
+      scale_color_manual(values = c("red", "black")) + scale_shape_manual(values = c(18, 16)) +
+      labs(x = "Pet type", color = "", shape = "", subtitle = "By type of pet",
+           y = "Number of untutored students\npredicted to pass with tutoring",
+           title = "Estimated number of untutored students\nwho would have passed with tutoring") +
+      expand_limits(y = 0) + coord_flip() }
+)
+```
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/potential_passes_group_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
 # Potential successes compared to group size
 
---
-
-## Pro
-
-- Step towards acknowledging different group sizes, and it also helps put the absolute numbers in context
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 --
 
-## Cons
+.pull-right[
+- Acknowledges different group sizes: puts absolute numbers in context
+
+{{content}}
+]
 
 --
 
-- Makes a strong causal claim, which may not be appropriate for your model
-
---
-
-- Doesn't convey the size of the _whole_ group, only of the number of passing students in the group 
-
---
-
-- If you have groups of vastly unequal sizes, then the effects for smaller groups will be squashed at the bottom of the scale and difficult to see
+- But small groups are squished at the bottom of the scale (hard to see)
 
 ---
 
-# Concluding Remarks
+# Conclusion
 
---
-
-- There is no right or wrong way, only better and worse ways, so, get creative! 
+- There is no right or wrong way, only better and worse ways for a particular project, so get creative! 
 
 --
 
@@ -1928,9 +2121,8 @@ But this graph shows that the absolute _number_ of extra passing students with f
 ---
 
 class: inverse, center, middle
-# Thank you
 
-
+# Thank you!
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
