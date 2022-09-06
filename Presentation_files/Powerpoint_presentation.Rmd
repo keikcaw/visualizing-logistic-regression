@@ -42,7 +42,7 @@ opts_chunk$set(echo = F, message = F, warning = F, error = F, fig.retina = 3,
   margin-bottom: 0em;
 }
 .remark-code {
-  font-size: 75% !important;
+  font-size: 60% !important;
 }
 ```
 
@@ -435,7 +435,7 @@ secret.log.odds.p +
 
 ---
 
-# Secret log-odds
+# Secret log-odds: Pros
 
 .pull-left[
 ```{r ref.label = "change_in_log_odds_adjusted_axis_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -543,7 +543,8 @@ knitr::read_chunk("visual_folder/odds.R")
 ```{r odds_ratio_adjusted_axis_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
 odds.ratio.p +
   guides(color = guide_legend(nrow = 3)) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 3), clip = "off")
 ```
 ]
 
@@ -626,7 +627,13 @@ odds.ratio.p +
 # Change in odds ratio: Cons
 
 .pull-left[
-```{r ref.label = "odds_ratio_adjusted_axis_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```{r odds_ratio_adjusted_axis_highlighted_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+odds.ratio.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 3), clip = "off") +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = -1.2, xmax = 0.5,
+           fill = NA, color = "red", size = 2)
 ```
 ]
 
@@ -647,7 +654,7 @@ odds.ratio.p +
 # Change in odds ratio: Cons
 
 .pull-left[
-```{r ref.label = "odds_ratio_adjusted_axis_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+```{r ref.label = "odds_ratio_adjusted_axis_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
 ```
 ]
 
@@ -664,6 +671,60 @@ odds.ratio.p +
 
   - Now we're pretty far removed from familiar scales
 ]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+secret.log.odds.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(-1.6, 1.5), clip = "off")
+```
+]
+
+.pull-right[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+odds.ratio.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 3), clip = "off")
+```
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+secret.log.odds.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(-1.6, 1.5), clip = "off") +
+  annotate("rect", ymin = -1.8, ymax = 1.7, xmin = 10.5, xmax = 11.5,
+           fill = NA, color = "red", size = 2) +
+  annotate("rect", ymin = -1.8, ymax = 1.7, xmin = 0.5, xmax = 1.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3, fig.retina = 6}
+odds.ratio.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom") +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 3), clip = "off") +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = 10.5, xmax = 11.5,
+           fill = NA, color = "red", size = 2) +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = 0.5, xmax = 1.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+- The scale is expanded for positive effects and compressed for negative effects
 
 ---
 

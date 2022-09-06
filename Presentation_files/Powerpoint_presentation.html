@@ -41,7 +41,7 @@ class: inverse, center, middle
   margin-bottom: 0em;
 }
 .remark-code {
-  font-size: 75% !important;
+  font-size: 60% !important;
 }
 &lt;/style&gt;
 
@@ -397,10 +397,8 @@ df = read.csv("data/course_outcomes.csv", header = T, stringsAsFactors = F)
 
 ```r
 df = df %&gt;%
-  mutate(
-    cs.prior.gpa = (prior.gpa - mean(prior.gpa)) / sd(prior.gpa),
-    cs.height = (height - mean(height)) / sd(height)
-  )
+  mutate(cs.prior.gpa = (prior.gpa - mean(prior.gpa)) / sd(prior.gpa),
+         cs.height = (height - mean(height)) / sd(height))
 ```
 
 --
@@ -414,11 +412,9 @@ df = df %&gt;%
 
 ```r
 df = df %&gt;%
-  mutate(
-    pet.type = fct_relevel(pet.type, "none", "dog", "cat", "fish"),
-    favorite.color = fct_relevel(favorite.color, "blue", "red",
-                                 "green", "orange")
-  )
+  mutate(pet.type = fct_relevel(pet.type, "none", "dog", "cat", "fish"),
+         favorite.color = fct_relevel(favorite.color, "blue", "red", "green",
+                                      "orange"))
 ```
 
 ---
@@ -510,24 +506,21 @@ class: inverse, center, middle
 coefs.df = summary(pass.m)$coefficients %&gt;%
   data.frame() %&gt;%
   rownames_to_column("parameter") %&gt;%
-  mutate(
-    pretty.parameter =
-      case_when(parameter == "(Intercept)" ~ "Intercept",
-                grepl("TRUE$", parameter) ~
-                  str_to_title(gsub("TRUE", "", parameter)),
-                grepl("pet\\.type", parameter) ~
-                  paste("Pet:",
-                        str_to_title(gsub("pet\\.type", "", parameter))),
-                grepl("favorite\\.color", parameter) ~
-                  paste("Favorite color:",
-                        str_to_title(gsub("favorite\\.color", "", parameter))),
-                parameter == "cs.prior.gpa" ~
-                  paste("Prior GPA\n(", round(sd(df$prior.gpa), 1),
-                        "-pt increase)", sep = ""),
-                parameter == "cs.height" ~
-                  paste("Height\n(", round(sd(df$height), 1),
-                        "-in increase)", sep = ""))
-  ) %&gt;%
+  mutate(pretty.parameter =
+           case_when(parameter == "(Intercept)" ~ "Intercept",
+                     grepl("TRUE$", parameter) ~
+                       str_to_title(gsub("TRUE", "", parameter)),
+                     grepl("pet\\.type", parameter) ~
+                       paste("Pet:", str_to_title(gsub("pet\\.type", "", parameter))),
+                     grepl("favorite\\.color", parameter) ~
+                       paste("Favorite color:",
+                             str_to_title(gsub("favorite\\.color", "", parameter))),
+                     parameter == "cs.prior.gpa" ~
+                       paste("Prior GPA\n(", round(sd(df$prior.gpa), 1),
+                             "-pt increase)", sep = ""),
+                     parameter == "cs.height" ~
+                       paste("Height\n(", round(sd(df$height), 1),
+                             "-in increase)", sep = ""))) %&gt;%
   dplyr::select(parameter, pretty.parameter, est = Estimate, se = Std..Error,
                 z = z.value, p = Pr...z..)
 ```
@@ -666,23 +659,31 @@ bad.color = "#CA0020"
 ```r
 log.odds.p = coefs.df %&gt;%
   filter(parameter != "(Intercept)") %&gt;%
-  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
-         signif = case_when(p &gt; 0.05 ~ "Not significant",
-                            est &gt; 0 ~ "Positive",
-                            est &lt; 0 ~ "Negative"),
-         signif = fct_relevel(signif, "Positive", "Not significant",
-                              "Negative")) %&gt;%
+  mutate(
+    pretty.parameter = fct_reorder(pretty.parameter, est),
+    signif = case_when(p &gt; 0.05 ~ "Not significant",
+                       est &gt; 0 ~ "Positive",
+                       est &lt; 0 ~ "Negative"),
+    signif = fct_relevel(signif, "Positive",
+                         "Not significant", "Negative")
+  ) %&gt;%
   ggplot(aes(x = pretty.parameter, color = signif)) +
-  geom_linerange(aes(ymin = est + (qnorm(0.025) * se),
-                     ymax = est + (qnorm(0.975) * se)),
-                 size = 1) +
-  geom_linerange(aes(ymin = est + (qnorm(0.25) * se),
-                     ymax = est + (qnorm(0.75) * se)),
-                 size = 2) +
+  geom_linerange(
+    aes(ymin = est + (qnorm(0.025) * se),
+        ymax = est + (qnorm(0.975) * se)),
+    size = 1
+  ) +
+  geom_linerange(
+    aes(ymin = est + (qnorm(0.25) * se),
+        ymax = est + (qnorm(0.75) * se)),
+    size = 2
+  ) +
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 0) +
-  scale_color_manual("Relationship to\nlog odds of passing",
-                     values = c(good.color, neutral.color, bad.color)) +
+  scale_color_manual(
+    "Relationship to\nlog odds of passing",
+    values = c(good.color, neutral.color, bad.color)
+  ) +
   labs(x = "", y = "Change in log odds",
        title = "Estimated relationships between\nstudent characteristics\nand log odds of passing") +
   coord_flip(clip = "off")
@@ -762,14 +763,20 @@ log.odds.p = coefs.df %&gt;%
 ```r
 secret.log.odds.p = coefs.df %&gt;%
   filter(parameter != "(Intercept)") %&gt;%
-  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
-         signif = case_when(p &gt; 0.05 ~ "Not significant",
-                            est &gt; 0 ~ "Positive",
-                            est &lt; 0 ~ "Negative"),
-         signif = fct_relevel(signif, "Positive", "Not significant", "Negative")) %&gt;%
+  mutate(
+    pretty.parameter = fct_reorder(pretty.parameter, est),
+    signif = case_when(p &gt; 0.05 ~ "Not significant",
+                       est &gt; 0 ~ "Positive",
+                       est &lt; 0 ~ "Negative"),
+    signif = fct_relevel(signif, "Positive",
+                         "Not significant", "Negative")) %&gt;%
   ggplot(aes(x = pretty.parameter, color = signif)) +
-  geom_linerange(aes(ymin = est + (qnorm(0.025) * se), ymax = est + (qnorm(0.975) * se)), size = 1) +
-  geom_linerange(aes(ymin = est + (qnorm(0.25) * se), ymax = est + (qnorm(0.75) * se)), size = 2) +
+  geom_linerange(aes(ymin = est + (qnorm(0.025) * se),
+                     ymax = est + (qnorm(0.975) * se)),
+                 size = 1) +
+  geom_linerange(aes(ymin = est + (qnorm(0.25) * se),
+                     ymax = est + (qnorm(0.75) * se)),
+                 size = 2) +
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 0) +
   scale_y_continuous(
@@ -778,8 +785,10 @@ secret.log.odds.p = coefs.df %&gt;%
 *              "Same",
 *              "Higher →")
   ) +
-  scale_color_manual("Relationship to\nchance of passing",
-                     values = c(good.color, neutral.color, bad.color)) +
+  scale_color_manual(
+    "Relationship to\nlog odds of passing",
+    values = c(good.color, neutral.color, bad.color)
+  ) +
   labs(x = "", y = "Chance of passing",
        title = "Estimated relationships between\nstudent characteristics\nand chance of passing") +
   coord_flip()
@@ -792,7 +801,7 @@ secret.log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Secret log-odds
+# Secret log-odds: Pros
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -885,29 +894,37 @@ layout: false
 ```r
 odds.ratio.p = coefs.df %&gt;%
   filter(parameter != "(Intercept)") %&gt;%
-  mutate(pretty.parameter = fct_reorder(pretty.parameter, est),
-         signif = case_when(p &gt; 0.05 ~ "Not significant",
-                            est &gt; 0 ~ "Positive",
-                            est &lt; 0 ~ "Negative"),
-         signif = fct_relevel(signif, "Positive", "Not significant",
-                              "Negative")) %&gt;%
-* mutate(across(matches("est|lower|upper"), ~ exp(.))) %&gt;%
+  mutate(
+    pretty.parameter = fct_reorder(pretty.parameter, est),
+    signif = case_when(p &gt; 0.05 ~ "Not significant",
+                       est &gt; 0 ~ "Positive",
+                       est &lt; 0 ~ "Negative"),
+    signif = fct_relevel(signif, "Positive",
+                         "Not significant", "Negative")
+  ) %&gt;%
+* mutate(across(matches("est|lower|upper"),
+*               ~ exp(.))) %&gt;%
   ggplot(aes(x = pretty.parameter, color = signif)) +
-  geom_linerange(aes(ymin = est + (qnorm(0.025) * se),
-                     ymax = est + (qnorm(0.975) * se)),
-                 size = 1) +
-  geom_linerange(aes(ymin = est + (qnorm(0.25) * se),
-                     ymax = est + (qnorm(0.75) * se)),
-                 size = 2) +
+  geom_linerange(
+    aes(ymin = est + (qnorm(0.025) * se),
+        ymax = est + (qnorm(0.975) * se)),
+    size = 1
+  ) +
+  geom_linerange(
+    aes(ymin = est + (qnorm(0.25) * se),
+        ymax = est + (qnorm(0.75) * se)),
+    size = 2
+  ) +
   geom_point(aes(y = est), size = 3) +
   geom_hline(yintercept = 1) +
-* scale_y_continuous(labels = scales::percent_format()) +
-  scale_color_manual("Relationship to\nodds ratio of passing",
+  scale_y_continuous(
+*   labels = scales::percent_format()
+  ) +
+  scale_color_manual("Relationship to\nlog odds of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   labs(x = "", y = "% change in odds ratio",
        title = "Estimated relationships between\nstudent characteristics\nand odds ratio of passing") +
-  coord_flip() +
-  theme_bw()
+  coord_flip()
 ```
 ]
 
@@ -990,7 +1007,7 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/odds_ratio_adjusted_axis_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1010,7 +1027,7 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1026,6 +1043,32 @@ odds.ratio.p = coefs.df %&gt;%
 
   - Now we're pretty far removed from familiar scales
 ]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-18-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+- The scale is expanded for positive effects and compressed for negative effects
 
 ---
 
