@@ -148,7 +148,7 @@ $$
 ```{r}
 logistic.curve.0.p = ggplot() +
   stat_function(fun = function(x) (exp(x)/(1+(exp(x)))), color = "#009DD8") +
-  scale_x_continuous(expression(beta[0]+beta[1]~X[1]~'+'~'...+'~beta[n]~X[n]),
+  scale_x_continuous(expression(beta[0]+beta[1]~x[1]~'+'~'...+'~beta[n]~x[n]),
                      limits = c(-6, 6), breaks = seq(-6, 6, 2)) +
   scale_y_continuous("probability (p)", limits = c(0, 1))
 logistic.curve.0.p
@@ -192,7 +192,7 @@ class: inverse, center, middle
 
 ---
 
-# Datset
+# Dataset
 
 ```{r fit_model, include = F}
 knitr::read_chunk("R_code/fit_model.R")
@@ -818,8 +818,6 @@ prob.baseline.p +
   theme(legend.position = "bottom") +
   coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 1), clip = "off")
 ```
-
---
 
 - (Uncertainty in intercept is not represented here)
 ]
