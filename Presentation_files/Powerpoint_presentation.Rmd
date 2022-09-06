@@ -324,6 +324,18 @@ knitr::read_chunk("visual_folder/colors.R")
 ```{r color-palette, echo = T}
 ```
 
+```{r}
+data.frame(color.name = paste(c("good", "neutral", "bad"), "color", sep = "."),
+           hex.code = c(good.color, neutral.color, bad.color)) %>%
+  mutate(color.name = fct_relevel(color.name, "good.color",
+                                  "neutral.color")) %>%
+  ggplot(aes(x = color.name, y = 1, color = hex.code)) +
+  geom_point(size = 30) +
+  scale_color_identity() +
+  theme_void() +
+  theme(axis.text.x = element_text(size = 14, margin = margin(t = 0, b = 5)))
+```
+
 ---
 
 # Change in log-odds
