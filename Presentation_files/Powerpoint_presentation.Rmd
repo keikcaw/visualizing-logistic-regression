@@ -14,7 +14,8 @@ output:
 
 class: inverse, center, middle
 
-# Logistic regression review
+# Github
+# https://github.com/keikcaw/visualizing-logistic-regression
 
 `r knitr::opts_knit$set(root.dir='..')`
 
@@ -48,6 +49,11 @@ opts_chunk$set(echo = F, message = F, warning = F, error = F, fig.retina = 3,
 
 ---
 
+class: inverse, center, middle
+
+# Logistic regression review
+
+---
 # Logistic regression: Binary outcomes
 
 - Use logistic regression to model a binary outcome
