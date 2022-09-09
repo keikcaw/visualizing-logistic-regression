@@ -30,7 +30,8 @@ class: center, middle, inverse, title-slide
 
 class: inverse, center, middle
 
-# Logistic regression review
+# Github
+# https://github.com/keikcaw/visualizing-logistic-regression
 
 
 
@@ -47,6 +48,11 @@ class: inverse, center, middle
 
 ---
 
+class: inverse, center, middle
+
+# Logistic regression review
+
+---
 # Logistic regression: Binary outcomes
 
 - Use logistic regression to model a binary outcome
@@ -164,7 +170,7 @@ class: inverse, center, middle
 
 ---
 
-# Datset
+# Dataset
 
 
 
@@ -477,28 +483,6 @@ summary(pass.m)$coefficients
 
 ---
 
-# Causality disclaimer
-
-- Some visualizations strongly imply a causal interpretation
-
---
-
-- It's your responsibility to evaluate whether a causal interpretation is appropriate
-
---
-
-- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
-
----
-
-class: inverse, center, middle
-
-# Visualization option 1:
-
-# Presenting model coefficients
-
----
-
 # Model coefficients
 
 
@@ -524,6 +508,45 @@ coefs.df = summary(pass.m)$coefficients %&gt;%
   dplyr::select(parameter, pretty.parameter, est = Estimate, se = Std..Error,
                 z = z.value, p = Pr...z..)
 ```
+
+
+---
+
+# Color palette
+
+
+
+
+```r
+good.color = "#0571B0"
+neutral.color = "gray"
+bad.color = "#CA0020"
+```
+
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-5-1.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Causality disclaimer
+
+- Some visualizations strongly imply a causal interpretation
+
+--
+
+- It's your responsibility to evaluate whether a causal interpretation is appropriate
+
+--
+
+- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
+
+---
+
+class: inverse, center, middle
+
+# Visualization option 1:
+
+# Presenting model coefficients
+
 
 ---
 
@@ -637,19 +660,6 @@ coefs.df = summary(pass.m)$coefficients %&gt;%
 
 ---
 
-# Color palette
-
-
-
-
-```r
-good.color = "#0571B0"
-neutral.color = "gray"
-bad.color = "#CA0020"
-```
-
----
-
 # Change in log-odds
 
 
@@ -700,7 +710,7 @@ log.odds.p = coefs.df %&gt;%
 # Change in log-odds: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -717,10 +727,18 @@ log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Change in log-odds: Cons
+# Change in log-odds: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+- It's clear which relationships are positive and which are negative
+
+- The plot has a transparent relationship to the fitted model
+
+- Numbers all in one place: a single scale instead of a table of numbers
 ]
 
 ---
@@ -728,10 +746,16 @@ log.odds.p = coefs.df %&gt;%
 # Change in log-odds: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
---
+---
+
+# Change in log-odds: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 .pull-right[
 - The magnitude of effect is in the log-odds scale
@@ -806,7 +830,7 @@ secret.log.odds.p = coefs.df %&gt;%
 # Secret log-odds: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -834,7 +858,7 @@ secret.log.odds.p = coefs.df %&gt;%
 # Secret log-odds: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -940,7 +964,7 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -960,7 +984,7 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -974,13 +998,13 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 - Not the way we usually describe odds
 
-  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
 ]
 
 ---
@@ -988,13 +1012,13 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 - Not the way we usually describe odds
 
-  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
 
   - The unfamiliar format may undo the benefit of using a familiar concept
 
@@ -1016,13 +1040,13 @@ odds.ratio.p = coefs.df %&gt;%
 .pull-right[
 - Not the way we usually describe odds
 
-  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
 
   - The unfamiliar format may undo the benefit of using a familiar concept
 
 - Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
 
-  - Percent change in odds (200% = double the odds) might be misinterpreted as a probability
+  - Percent change in odds (300% = triple the odds) might be misinterpreted as a probability
 ]
 
 ---
@@ -1030,33 +1054,21 @@ odds.ratio.p = coefs.df %&gt;%
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
 - Not the way we usually describe odds
 
-  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4”
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
 
   - The unfamiliar format may undo the benefit of using a familiar concept
 
 - Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
 
-  - Percent change in odds (200% = double the odds) might be misinterpreted as a probability
+  - Percent change in odds (300% = triple the odds) might be misinterpreted as a probability
 
   - Now we're pretty far removed from familiar scales
-]
-
----
-
-# Change in odds ratio: Cons
-
-.pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
-]
-
-.pull-right[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -1069,6 +1081,18 @@ odds.ratio.p = coefs.df %&gt;%
 
 .pull-right[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-20-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-21-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 - The scale is expanded for positive effects and compressed for negative effects
@@ -1089,7 +1113,7 @@ class: inverse, center, middle
 
 --
 
-- We can choose an appropriate baseline probability 
+- We can choose an appropriate baseline probability, then compute the marginal effect of a predictor given that baseline
 
 --
 
@@ -1193,8 +1217,6 @@ prob.baseline.p = coefs.df %&gt;%
 .pull-right[
 &lt;img src="Powerpoint_presentation_files/figure-html/probability_baseline_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
---
-
 - (Uncertainty in intercept is not represented here)
 ]
 
@@ -1203,7 +1225,7 @@ prob.baseline.p = coefs.df %&gt;%
 # Probabilities relative to a baseline: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-20-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-22-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1243,7 +1265,7 @@ prob.baseline.p = coefs.df %&gt;%
 # Probabilities relative to a baseline: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-21-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-23-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1259,7 +1281,7 @@ prob.baseline.p = coefs.df %&gt;%
 # Probabilities relative to a baseline: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-22-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-24-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1327,7 +1349,7 @@ prob.baseline.arrows.p = coefs.df %&gt;%
 # Probabilities relative to a baseline: Arrows
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-23-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-25-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1425,7 +1447,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-24-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-26-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1453,7 +1475,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-25-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-27-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1469,7 +1491,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-26-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-28-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1487,7 +1509,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-27-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-29-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1513,7 +1535,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
 # Multiple baselines by group: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-28-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-30-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1556,6 +1578,93 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
 
 `$$p_f = \mbox{logit}^{-1}(\mbox{logit}(p_0) + \beta_f)$$`
   
+---
+# Banana graphs
+
+- Say your stakeholder is interested in the magnitude of effect that having a pet fish has on passing Balloon Animal-Making
+
+--
+
+- Choose some baseline: let's randomly pick _p_ = .25
+
+--
+
+- Plug it into the equation:
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$` 
+
+--
+
+`$$\log\left(\begin{array}{c}\frac{0.25}{1-0.25}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$`
+
+--
+
+`$$-1.098612 =  \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$`
+--
+
+- Someone who does not own a pet fish will have `\(x_{fish}\)` = 0
+
+--
+
+
+`$$-1.098612 =  \beta_0 + \beta_{fish}0 + \beta_1x_1 + \ldots + \beta_nx_n$$`
+--
+
+`$$-1.098612 =  \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n \\$$`
+
+
+---
+# Banana graphs
+
+- Another student: **exact same characteristics as this student who *doesn't* own a pet fish and has a 25% predicted probability of passing** 
+  
+--
+  
+  - *Except* that they **own a pet fish**
+  
+--
+
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$`
+
+--
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}(1) + \beta_1x_1 + \ldots + \beta_nx_n$$`
+
+--
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_{fish}(1) + [\beta_0  + \beta_1x_1 + \ldots + \beta_nx_n]$$`
+
+---
+# Banana graphs
+
+- Another student: **exact same characteristics as this student who *doesn't* own a pet fish and has a 25% predicted probability of passing** 
+  
+  - *Except* that they **own a pet fish**
+  
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$`
+
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}(1) + \beta_1x_1 + \ldots + \beta_nx_n$$`
+
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_{fish}(1) + \boxed{[\beta_0  + \beta_1x_1 + \ldots + \beta_nx_n]}$$`
+
+--
+
+`$$-1.098612 = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n$$`
+--
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_{fish}(1) + (-1.098612)$$`
+
+--
+
+`$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = (-1.19359401)(1) + (-1.098612)$$`
+
+--
+
+`$$p =  0.09177052$$`
 ---
 
 # Banana graphs
@@ -1634,7 +1743,12 @@ banana.p = data.frame(x = seq(0.01, 0.99, 0.01),
 
 --
 
-- Positive effects above the line; negative effects below the line
+- Positive effects above the line; negative effects below the line; no effect on the line
+
+---
+# Banana graphs
+
+&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_highlighted_plot_two-1.png" width="50%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1687,7 +1801,7 @@ banana.multiple.p =
 # Banana graphs: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-29-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1707,7 +1821,7 @@ banana.multiple.p =
 # Banana graphs: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-30-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1842,7 +1956,7 @@ extra.p = with(
 # Extra successes: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1862,7 +1976,7 @@ extra.p = with(
 # Extra successes: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1954,7 +2068,7 @@ extra.group.p = with(
 # Extra successes by group: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1980,7 +2094,7 @@ extra.group.p = with(
 # Extra successes by group: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-36-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -2085,7 +2199,7 @@ potential.group.p = with(
 # Potential successes compared to group size
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-37-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
