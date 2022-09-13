@@ -271,13 +271,28 @@ df %>%
 ```{r model, echo = T, highlight.output = c(4, 5, 7, 9, 11, 12, 13)}
 ```
 
+
+---
+
+# Causality disclaimer
+
+- Some visualizations strongly imply a causal interpretation
+
+--
+
+- It's your responsibility to evaluate whether a causal interpretation is appropriate
+
+--
+
+- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
+
+
 ---
 
 # Model coefficients
 
 ``` {r get-coefficients, echo = T}
 ```
-
 
 ---
 
@@ -301,20 +316,6 @@ data.frame(color.name = paste(c("good", "neutral", "bad"), "color", sep = "."),
   theme_void() +
   theme(axis.text.x = element_text(size = 14, margin = margin(t = 0, b = 5)))
 ```
-
----
-
-# Causality disclaimer
-
-- Some visualizations strongly imply a causal interpretation
-
---
-
-- It's your responsibility to evaluate whether a causal interpretation is appropriate
-
---
-
-- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
 
 ---
 
@@ -1190,96 +1191,8 @@ prob.group.p +
 --
 
 $$p_f = \mbox{logit}^{-1}(\mbox{logit}(p_0) + \beta_f)$$
-  
+ 
 ---
-# Banana graphs
-
-- Say your stakeholder is interested in the magnitude of effect that having a pet fish has on passing Balloon Animal-Making
-
---
-
-- Choose some baseline: let's randomly pick _p_ = .25
-
---
-
-- Plug it into the equation:
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$ 
-
---
-
-$$\log\left(\begin{array}{c}\frac{0.25}{1-0.25}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$
-
---
-
-$$-1.098612 =  \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$
---
-
-- Someone who does not own a pet fish will have $x_{fish}$ = 0
-
---
-
-
-$$-1.098612 =  \beta_0 + \beta_{fish}0 + \beta_1x_1 + \ldots + \beta_nx_n$$
---
-
-$$-1.098612 =  \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n \\$$
-
-
----
-# Banana graphs
-
-- Another student: **exact same characteristics as this student who *doesn't* own a pet fish and has a 25% predicted probability of passing** 
-  
---
-  
-  - *Except* that they **own a pet fish**
-  
---
-
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$
-
---
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}(1) + \beta_1x_1 + \ldots + \beta_nx_n$$
-
---
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_{fish}(1) + [\beta_0  + \beta_1x_1 + \ldots + \beta_nx_n]$$
-
----
-# Banana graphs
-
-- Another student: **exact same characteristics as this student who *doesn't* own a pet fish and has a 25% predicted probability of passing** 
-  
-  - *Except* that they **own a pet fish**
-  
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}x_{fish} + \beta_1x_1 + \ldots + \beta_nx_n$$
-
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_{fish}(1) + \beta_1x_1 + \ldots + \beta_nx_n$$
-
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_{fish}(1) + \boxed{[\beta_0  + \beta_1x_1 + \ldots + \beta_nx_n]}$$
-
---
-
-$$-1.098612 = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n$$
---
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_{fish}(1) + (-1.098612)$$
-
---
-
-$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = (-1.19359401)(1) + (-1.098612)$$
-
---
-
-$$p =  0.09177052$$
----
-
 # Banana graphs
 
 ```{r banana_graphs, include = F}
