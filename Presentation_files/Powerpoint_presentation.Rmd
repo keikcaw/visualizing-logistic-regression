@@ -271,13 +271,28 @@ df %>%
 ```{r model, echo = T, highlight.output = c(4, 5, 7, 9, 11, 12, 13)}
 ```
 
+
+---
+
+# Causality disclaimer
+
+- Some visualizations strongly imply a causal interpretation
+
+--
+
+- It's your responsibility to evaluate whether a causal interpretation is appropriate
+
+--
+
+- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
+
+
 ---
 
 # Model coefficients
 
 ``` {r get-coefficients, echo = T}
 ```
-
 
 ---
 
@@ -301,20 +316,6 @@ data.frame(color.name = paste(c("good", "neutral", "bad"), "color", sep = "."),
   theme_void() +
   theme(axis.text.x = element_text(size = 14, margin = margin(t = 0, b = 5)))
 ```
-
----
-
-# Causality disclaimer
-
-- Some visualizations strongly imply a causal interpretation
-
---
-
-- It's your responsibility to evaluate whether a causal interpretation is appropriate
-
---
-
-- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
 
 ---
 
