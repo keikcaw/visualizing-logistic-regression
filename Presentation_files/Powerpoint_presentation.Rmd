@@ -347,7 +347,7 @@ coefs.df %>%
 
 ---
 
-# Change in log-odds
+# Change in log odds
 
 ```{r log_odds, include = F}
 knitr::read_chunk("visual_folder/log_odds.R")
@@ -369,7 +369,7 @@ log.odds.p +
 
 ---
 
-# Change in log-odds: Pros
+# Change in log odds: Pros
 
 .pull-left[
 ```{r ref.label = "change_in_log_odds_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -390,7 +390,7 @@ log.odds.p +
 
 ---
 
-# Change in log-odds: Pros
+# Change in log odds: Pros
 
 .pull-left[
 ```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -413,7 +413,7 @@ log.odds.p +
 
 ---
 
-# Change in log-odds: Cons
+# Change in log odds: Cons
 
 .pull-left[
 ```{r ref.label = "change_in_log_odds_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -422,7 +422,7 @@ log.odds.p +
 
 ---
 
-# Change in log-odds: Cons
+# Change in log odds: Cons
 
 .pull-left[
 ```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -436,20 +436,20 @@ log.odds.p +
 ]
 
 .pull-right[
-- The magnitude of effect is in the log-odds scale
+- The magnitude of effect is in the log odds scale
 
 {{content}}
 ]
 
 --
 
-- What is a 0.4 change in the log-odds?
+- What is a 0.4 change in the log odds?
 
 {{content}}
 
 --
 
-- Is the change between 0.4 and 0.8 log-odds "big" or "small"?
+- Is the change between 0.4 and 0.8 log odds "big" or "small"?
 
 {{content}}
 
@@ -459,7 +459,7 @@ log.odds.p +
 
 ---
 
-# Secret log-odds
+# Secret log odds
 
 .pull-left[
 ```{r change-in-log-odds-adjusted-axis, echo = T, fig.show = "hide"}
@@ -477,7 +477,7 @@ secret.log.odds.p +
 
 ---
 
-# Secret log-odds: Pros
+# Secret log odds: Pros
 
 .pull-left[
 ```{r ref.label = "change_in_log_odds_adjusted_axis_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -486,7 +486,7 @@ secret.log.odds.p +
 
 ---
 
-# Secret log-odds: Pros
+# Secret log odds: Pros
 
 .pull-left[
 ```{r change_in_log_adds_adjusted_axis_highlighted_plot, out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -513,7 +513,7 @@ secret.log.odds.p +
 
 ---
 
-# Secret log-odds: Cons
+# Secret log odds: Cons
 
 .pull-left[
 ```{r ref.label = "change_in_log_adds_adjusted_axis_highlighted_plot", out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
@@ -538,7 +538,7 @@ layout: true
 
 #  Change in odds ratio
 
-- Your audience may be more familiar with the "odds" part of log-odds
+- Your audience may be more familiar with the "odds" part of log odds
 
 ---
 
@@ -602,7 +602,7 @@ odds.ratio.p +
 --
 
 .pull-right[
-- Changes in odds might be easier to describe than changes in log-odds
+- Changes in odds might be easier to describe than changes in log odds
 
 {{content}}
 ]
