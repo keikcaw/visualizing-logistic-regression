@@ -1469,7 +1469,7 @@ extra.p
 
 --
 
-- Strong cauasal interpretation
+- Strong causal interpretation
 
 {{content}}
 
