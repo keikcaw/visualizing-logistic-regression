@@ -1453,12 +1453,6 @@ extra.p
 
 - Strong causal interpretation
 
-{{content}}
-
---
-
-- Range of uncertainty depends in part on how many simulations you run
-
 ---
 
 # Extra successes by group
@@ -1541,8 +1535,6 @@ extra.group.p
 ---
 
 # Potential successes compared to group size
-
---
 
 - Attempt to show _both_ the effect size for each group _and_ the overall size of that group
 
