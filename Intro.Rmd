@@ -363,14 +363,14 @@ We can get a simple point estimate by using our model to predict outcomes for th
 
 1. Take all observations in the dataset for students who received tutoring.
 2. Set the value of the `tutoring` predictor to `FALSE` for all students.
-2. For each of (10,000, or some other suitably large number) simulations:
-    1. **Account for uncertainty in parameter estimates:** Sample a value for each parameter in the model. We took a sample from the normal distribution with its mean set to the estimated parameter value and its standard deviation set to the standard error.
+2. For each of (5,000, or some other suitably large number) simulations:
+    1. **Account for uncertainty in parameter estimates:** Sample a value for each parameter in the model. We took a sample from the normal distribution with its mean set to the estimated parameter value and its standard deviation set to the standard error.  (Ideally, our sampling procedure would also take into account the correlations among the fitted parameters.  We haven't done this here; the correlations in this particular model are all quite small.)
     2. Compute the predicted probability of passing for each student using these parameter values.
     2. **Account for uncertainty in outcomes:** Randomly assign each prediction to "pass" or "fail", weighted by the predicted probability of passing.
     2. Sum the total number of students predicted to pass. Subtract this total from the number of students who actually passed. This is the predicted number of "extra" passes.
 2. Summarize the distribution of predicted number of extra passing students over all the simulations.
 
-The histogram below shows the results of 10,000 simulations like this for our dataset. Our model estimates that tutoring did indeed increase the number of students who passed -- probably by somewhere around 40-80 students.
+The histogram below shows the results of 5,000 simulations like this for our dataset. Our model estimates that tutoring did indeed increase the number of students who passed -- probably by somewhere around 50-150 students.
 
 ```{r extra-passes}
 ```
