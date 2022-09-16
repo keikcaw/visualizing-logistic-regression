@@ -31,6 +31,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
   scale_color_manual("Relationship to\nprobability of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
+  theme(panel.spacing.x = unit(0.65, "lines")) +
   labs(x = "", y = "Probability of passing", subtitle = "By type of pet",
        title = "Estimated relationships between\nstudent characteristics\nand probability of passing") +
   coord_flip()
@@ -66,7 +67,7 @@ prob.group.arrows.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
   scale_color_manual("Relationship to\nprobability of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
+  theme(panel.spacing.x = unit(0.65, "lines")) +
   labs(x = "Probability of passing", y = "",
        title = "Estimated relationships between\nstudent characteristics\nand probability of passing",
-       subtitle = "By type of pet") +
-  theme_bw()
+       subtitle = "By type of pet")
