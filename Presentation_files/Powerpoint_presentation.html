@@ -1429,6 +1429,7 @@ prob.group.p = expand.grid(pet = c("None", "Dog", "Cat", "Fish"),
   scale_color_manual("Relationship to\nprobability of passing",
                      values = c(good.color, neutral.color, bad.color)) +
   facet_wrap(~ pet) +
+  theme(panel.spacing.x = unit(0.65, "lines")) +
   labs(x = "", y = "Probability of passing", subtitle = "By type of pet",
        title = "Estimated relationships between\nstudent characteristics\nand probability of passing") +
   coord_flip()
@@ -1627,7 +1628,7 @@ banana.p = data.frame(x = seq(0.01, 0.99, 0.01),
 # Banana graphs
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1657,7 +1658,7 @@ banana.p = data.frame(x = seq(0.01, 0.99, 0.01),
 ---
 # Banana graphs
 
-&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_highlighted_plot_two-1.png" width="50%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/banana_graph_highlighted_plot-1.png" width="50%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1710,7 +1711,7 @@ banana.multiple.p =
 # Banana graphs: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1730,7 +1731,7 @@ banana.multiple.p =
 # Banana graphs: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1869,7 +1870,7 @@ extra.p = with(
 # Extra successes: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1889,7 +1890,7 @@ extra.p = with(
 # Extra successes: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1974,7 +1975,7 @@ extra.group.p = with(
 # Extra successes by group: Pros
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-36-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -2000,7 +2001,7 @@ extra.group.p = with(
 # Extra successes by group: Cons
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-36-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-37-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -2102,7 +2103,7 @@ potential.group.p = with(
 # Potential successes compared to group size
 
 .pull-left[
-&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-37-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-38-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --

@@ -148,9 +148,7 @@ data.frame(color.name = paste(c("good", "neutral", "bad"), "color", sep = "."),
 
 ### Disclaimer: causality
 
-Throughout this discussion it may seem like we are suggesting that a causal relationship exists between a predictor variable and the outcome/dependent variable. However, this discussion is not about causality, and we will not discuss how to robustly evaluate causality. Although the logistic regression model estimates the values of the predictor variables, whether a causal relationship actually exists between the predictor and outcome variable requires careful consideration and domain knowledge surrounding the research question.
-
-Several of the visualizations below strongly imply a causaly effect of some predictor on the outcome.  You should use your judgment when considering these visualizations: if your data doesn't justify a causal interpretation, don't use them!
+Several of the visualizations below strongly imply a causal effect of some predictor on the outcome. However, this discussion is not about causality, and we will not discuss how to robustly evaluate causality. Although the logistic regression model estimates the values of the predictor variables, whether a causal relationship actually exists between the predictor and outcome variable requires careful consideration and domain knowledge surrounding the research question. You should use your judgment when considering these visualizations: if your data doesn't justify a causal interpretation, don't use them!
 
 # Presenting model coefficients
 
@@ -171,7 +169,7 @@ coefs.df %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
-All the numbers in the table can be taxing on the eyes and difficult for your reader to absorb insights from your model. We can aid the audience by swapping out the table with a caterpillar plot of the predictors.
+Although this table may be appropriate for technical audiences who are familiar with logistic regression, but non-technical audiences will not understand the meaning behind each of the columns. Furthermore, the numbers in the table can be taxing on the eyes making it difficult to absorb insights from your model. We can aid the audience by swapping out the table with a caterpillar plot of the predictors.
 
 ```{r change-in-log-odds}
 ```
@@ -180,7 +178,7 @@ All the numbers in the table can be taxing on the eyes and difficult for your re
 log.odds.p
 ```
 
-This plot clearly presents all the predictors used in the model; catalogs which effects are positive, negative, or no effect; and contains confidence intervals to convey the uncertainty in our estimates. Using the raw outputs from the logistic regression means that the magnitude of effect is in the log odds scale. This visual is perfect for audiences who know exactly what a log odds is, and problematic for non-technical audiences who do not. The visual can leave your non-technical audience member wondering what a 0.4 change in the log odds even means. Is the difference between a change in the log odds of 0.4 and 0.8 big or small?  If the scale doesn't mean anything to your audience member then it is your duty as the researcher to either provide an explanation or make an adjustment.
+This plot clearly presents all the predictors used in the model; catalogs which effects are positive, negative, or of no effect; and contains confidence intervals to convey the uncertainty in our estimates. You could argue that a table could do these things as well: color the cells of the table, add columns for the confidence intervals, and order the cells. Therefore, the characteristic which makes this plot more visually appealing than a table is that the numbers are isolated in one place: the x-axis. However, using the raw outputs from the logistic regression means that the magnitude of effect is in the log odds scale. This visual is perfect for audiences who know exactly what a log odds is, and problematic for non-technical audiences who do not. The visual can leave your non-technical audience member wondering what a 0.4 change in the log odds even means. Is the difference between a change in the log odds of 0.4 and 0.8 big or small?  If the scale doesn't mean anything to your audience member then it is your duty as the researcher to either provide an explanation or make an adjustment.
 
 ### Secret log odds
 
@@ -271,7 +269,7 @@ If there's no single appropriate baseline probability for your dataset, you migh
 
 ```{r probability-relative-to-some-baseline-and-group-no-arrows}
 ```
-```{r probability_group_plot, echo = F, fig.asp = 1}
+```{r probability_group_plot, echo = F, fig.width = 6.5, fig.asp = 1}
 prob.group.p
 ```
 
@@ -280,7 +278,7 @@ As before, we can use arrows instead of confidence intervals:
 ```{r probability-relative-to-some-baseline-and-group-with-arrows}
 ```
 
-```{r probability_group_arrows_plot, echo = F, fig.asp = 1}
+```{r probability_group_arrows_plot, echo = F, fig.width = 6.5, fig.asp = 1}
 prob.group.arrows.p
 ```
 
