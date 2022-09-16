@@ -1826,23 +1826,27 @@ class: inverse, center, middle
 ```r
 extra.p = with(
   list(
-*   temp.df = expand.grid(
-*     draw = 1:10000,
-*     id = df$id[df$tutoring]
-*   ) %&gt;%
-*     left_join(df, by = "id") %&gt;%
-*     mutate(tutoring = F)
+*   temp.df = map_dfr(
+*     1:5000,
+*     function(d) {
+*       data.frame(
+*         draw = d,
+*         mu = model.matrix(
+*           pass.m,
+*           data = df %&gt;%
+*             filter(tutoring) %&gt;%
+*             mutate(tutoring = F)
+*         ) %*%
+*           rnorm(nrow(coefs.df),
+*                 mean = coefs.df$est,
+*                 sd = coefs.df$se)
+*       )
+*     }
+*   )
   ),
   {
     temp.df %&gt;%
-      mutate(
-*       mu = model.matrix(pass.m,
-*                         data = temp.df) %*%
-*         rnorm(nrow(coefs.df),
-*               mean = coefs.df$est,
-*               sd = coefs.df$se),
-*       pred = runif(n()) &lt; invlogit(mu)
-      ) %&gt;%
+      mutate(pred = runif(n()) &lt; invlogit(mu)) %&gt;%
       group_by(draw) %&gt;%
       summarise(pred.passed = sum(pred)) %&gt;%
       ungroup() %&gt;%
@@ -1910,12 +1914,6 @@ extra.p = with(
 
 - Strong cauasal interpretation
 
-{{content}}
-
---
-
-- Range of uncertainty depends in part on how many simulations you run
-
 ---
 
 # Extra successes by group
@@ -1934,12 +1932,15 @@ extra.p = with(
 
 ```r
 extra.group.p = with(
-  list(temp.df = expand.grid(draw = 1:10000,
-                             id = df$id[df$tutoring]) %&gt;%
-         left_join(df, by = "id") %&gt;% mutate(tutoring = F)),
+  list(
+    temp.df = map_dfr(1:5000,
+                      function(d) { data.frame(draw = d,
+                                               pet.type = df$pet.type[df$tutoring],
+                                               mu = model.matrix(pass.m, data = df %&gt;% filter(tutoring) %&gt;% mutate(tutoring = F)) %*%
+                                                 rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se)) })
+  ),
   { temp.df %&gt;%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
-             pred = runif(n()) &lt; invlogit(mu)) %&gt;%
+      mutate(pred = runif(n()) &lt; invlogit(mu)) %&gt;%
 *     group_by(pet.type, draw) %&gt;%
       summarise(pred.passed = sum(pred), .groups = "keep") %&gt;%
       ungroup() %&gt;%
@@ -1952,11 +1953,7 @@ extra.group.p = with(
 *               by = "pet.type") %&gt;%
       mutate(pet.type = str_to_title(pet.type), extra.passed = actual.passed - pred.passed) %&gt;%
       group_by(pet.type) %&gt;%
-      summarise(lower.95 = quantile(extra.passed, 0.025),
-                lower.50 = quantile(extra.passed, 0.25),
-                median = median(extra.passed),
-                upper.50 = quantile(extra.passed, 0.75),
-                upper.95 = quantile(extra.passed, 0.975)) %&gt;%
+      summarise(lower.95 = quantile(extra.passed, 0.025), lower.50 = quantile(extra.passed, 0.25), median = median(extra.passed), upper.50 = quantile(extra.passed, 0.75), upper.95 = quantile(extra.passed, 0.975)) %&gt;%
       ungroup() %&gt;%
       mutate(pet.type = fct_reorder(pet.type, median)) %&gt;%
       ggplot(aes(x = pet.type)) +
@@ -2032,8 +2029,6 @@ extra.group.p = with(
 
 # Potential successes compared to group size
 
---
-
 - Attempt to show _both_ the effect size for each group _and_ the overall size of that group
 
 --
@@ -2065,15 +2060,14 @@ extra.group.p = with(
 ```r
 potential.group.p = with(
   list(
-*   temp.df = expand.grid(
-*     draw = 1:10000,
-*     id = df$id[!df$tutoring]
-*   ) %&gt;%
-*     left_join(df, by = "id") %&gt;%
-*     mutate(tutoring = T)
+    temp.df = map_dfr(1:5000,
+                      function(d) { data.frame(draw = d,
+                                               pet.type = df$pet.type[!df$tutoring],
+                                               mu = model.matrix(pass.m, data = df %&gt;% filter(!tutoring) %&gt;% mutate(tutoring = T)) %*%
+                                                 rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se)) })
   ),
   { temp.df %&gt;%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se), pred = runif(n()) &lt; invlogit(mu)) %&gt;%
+      mutate(pred = runif(n()) &lt; invlogit(mu)) %&gt;%
       group_by(pet.type, draw) %&gt;%
 *     summarise(n.passed = sum(pred),
 *               .groups = "keep") %&gt;%
