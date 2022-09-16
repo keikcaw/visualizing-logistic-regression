@@ -2,23 +2,27 @@
 
 extra.p = with(
   list(
-    temp.df = expand.grid( #<<
-      draw = 1:10000, #<<
-      id = df$id[df$tutoring] #<<
-    ) %>% #<<
-      left_join(df, by = "id") %>% #<<
-      mutate(tutoring = F) #<<
+    temp.df = map_dfr( #<<
+      1:5000, #<<
+      function(d) { #<<
+        data.frame( #<<
+          draw = d, #<<
+          mu = model.matrix( #<<
+            pass.m, #<<
+            data = df %>% #<<
+              filter(tutoring) %>% #<<
+              mutate(tutoring = F) #<<
+          ) %*% #<<
+            rnorm(nrow(coefs.df), #<<
+                  mean = coefs.df$est, #<<
+                  sd = coefs.df$se) #<<
+        ) #<<
+      } #<<
+    ) #<<
   ),
   {
     temp.df %>%
-      mutate(
-        mu = model.matrix(pass.m, #<<
-                          data = temp.df) %*% #<<
-          rnorm(nrow(coefs.df), #<<
-                mean = coefs.df$est, #<<
-                sd = coefs.df$se), #<<
-        pred = runif(n()) < invlogit(mu) #<<
-      ) %>%
+      mutate(pred = runif(n()) < invlogit(mu)) %>%
       group_by(draw) %>%
       summarise(pred.passed = sum(pred)) %>%
       ungroup() %>%
@@ -34,16 +38,18 @@ extra.p = with(
   }
 )
 
-
 ## ---- extra-passes-by-group ----
 
 extra.group.p = with(
-  list(temp.df = expand.grid(draw = 1:10000,
-                             id = df$id[df$tutoring]) %>%
-         left_join(df, by = "id") %>% mutate(tutoring = F)),
+  list(
+    temp.df = map_dfr(1:5000,
+                      function(d) { data.frame(draw = d,
+                                               pet.type = df$pet.type[df$tutoring],
+                                               mu = model.matrix(pass.m, data = df %>% filter(tutoring) %>% mutate(tutoring = F)) %*%
+                                                 rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se)) })
+  ),
   { temp.df %>%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
-             pred = runif(n()) < invlogit(mu)) %>%
+      mutate(pred = runif(n()) < invlogit(mu)) %>%
       group_by(pet.type, draw) %>% #<<
       summarise(pred.passed = sum(pred), .groups = "keep") %>%
       ungroup() %>%
@@ -56,11 +62,7 @@ extra.group.p = with(
                 by = "pet.type") %>% #<<
       mutate(pet.type = str_to_title(pet.type), extra.passed = actual.passed - pred.passed) %>%
       group_by(pet.type) %>%
-      summarise(lower.95 = quantile(extra.passed, 0.025),
-                lower.50 = quantile(extra.passed, 0.25),
-                median = median(extra.passed),
-                upper.50 = quantile(extra.passed, 0.75),
-                upper.95 = quantile(extra.passed, 0.975)) %>%
+      summarise(lower.95 = quantile(extra.passed, 0.025), lower.50 = quantile(extra.passed, 0.25), median = median(extra.passed), upper.50 = quantile(extra.passed, 0.75), upper.95 = quantile(extra.passed, 0.975)) %>%
       ungroup() %>%
       mutate(pet.type = fct_reorder(pet.type, median)) %>%
       ggplot(aes(x = pet.type)) +
@@ -78,15 +80,14 @@ extra.group.p = with(
 
 potential.group.p = with(
   list(
-    temp.df = expand.grid( #<<
-      draw = 1:10000, #<<
-      id = df$id[!df$tutoring] #<<
-    ) %>% #<<
-      left_join(df, by = "id") %>% #<<
-      mutate(tutoring = T) #<<
+    temp.df = map_dfr(1:5000,
+                      function(d) { data.frame(draw = d,
+                                               pet.type = df$pet.type[!df$tutoring],
+                                               mu = model.matrix(pass.m, data = df %>% filter(!tutoring) %>% mutate(tutoring = T)) %*%
+                                                 rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se)) })
   ),
   { temp.df %>%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se), pred = runif(n()) < invlogit(mu)) %>%
+      mutate(pred = runif(n()) < invlogit(mu)) %>%
       group_by(pet.type, draw) %>%
       summarise(n.passed = sum(pred), #<<
                 .groups = "keep") %>% #<<

@@ -30,8 +30,8 @@ class: center, middle, inverse, title-slide
 
 class: inverse, center, middle
 
-# Github
-# https://github.com/keikcaw/visualizing-logistic-regression
+# GitHub
+### https://github.com/keikcaw/visualizing-logistic-regression
 
 
 
@@ -544,7 +544,7 @@ bad.color = "#CA0020"
 
 class: inverse, center, middle
 
-# Visualization option 1:
+# Visualization family 1:
 
 # Presenting model coefficients
 
@@ -661,7 +661,7 @@ class: inverse, center, middle
 
 ---
 
-# Change in log-odds
+# Change in log odds
 
 
 
@@ -708,7 +708,7 @@ log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Change in log-odds: Pros
+# Change in log odds: Pros
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -728,7 +728,7 @@ log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Change in log-odds: Pros
+# Change in log odds: Pros
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -744,7 +744,7 @@ log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Change in log-odds: Cons
+# Change in log odds: Cons
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -752,27 +752,27 @@ log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Change in log-odds: Cons
+# Change in log odds: Cons
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
-- The magnitude of effect is in the log-odds scale
+- The magnitude of effect is in the log odds scale
 
 {{content}}
 ]
 
 --
 
-- What is a 0.4 change in the log-odds?
+- What is a 0.4 change in the log odds?
 
 {{content}}
 
 --
 
-- Is the change between 0.4 and 0.8 log-odds "big" or "small"?
+- Is the change between 0.4 and 0.8 log odds "big" or "small"?
 
 {{content}}
 
@@ -782,7 +782,7 @@ log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Secret log-odds
+# Secret log odds
 
 .pull-left[
 
@@ -828,7 +828,7 @@ secret.log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Secret log-odds: Pros
+# Secret log odds: Pros
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -836,7 +836,7 @@ secret.log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Secret log-odds: Pros
+# Secret log odds: Pros
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/change_in_log_adds_adjusted_axis_highlighted_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -856,7 +856,7 @@ secret.log.odds.p = coefs.df %&gt;%
 
 ---
 
-# Secret log-odds: Cons
+# Secret log odds: Cons
 
 .pull-left[
 &lt;img src="Powerpoint_presentation_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
@@ -880,7 +880,7 @@ layout: true
 
 #  Change in odds ratio
 
-- Your audience may be more familiar with the "odds" part of log-odds
+- Your audience may be more familiar with the "odds" part of log odds
 
 ---
 
@@ -971,7 +971,7 @@ odds.ratio.p = coefs.df %&gt;%
 --
 
 .pull-right[
-- Changes in odds might be easier to describe than changes in log-odds
+- Changes in odds might be easier to describe than changes in log odds
 
 {{content}}
 ]
@@ -1102,7 +1102,7 @@ odds.ratio.p = coefs.df %&gt;%
 
 class: inverse, center, middle
 
-# Visualization option 2:
+# Visualization family 2:
 
 # Presenting probabilities
 
@@ -1385,13 +1385,9 @@ prob.baseline.arrows.p = coefs.df %&gt;%
 
 `$$p_{j1} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1})$$`
 
-`$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$`
-
 --
 
-`$$p_{j2} = \mbox{logit}^{-1}(\beta_0 + \beta_{j2})$$`
-
-`$$p_{j2 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j2} + \beta_i)$$`
+`$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$`
 
 ---
 
@@ -1760,7 +1756,7 @@ banana.multiple.p =
 
 class: inverse, center, middle
 
-# Visualization option 3:
+# Visualization family 3:
 
 # Counterfactual counts
 
@@ -1827,23 +1823,27 @@ class: inverse, center, middle
 ```r
 extra.p = with(
   list(
-*   temp.df = expand.grid(
-*     draw = 1:10000,
-*     id = df$id[df$tutoring]
-*   ) %&gt;%
-*     left_join(df, by = "id") %&gt;%
-*     mutate(tutoring = F)
+*   temp.df = map_dfr(
+*     1:5000,
+*     function(d) {
+*       data.frame(
+*         draw = d,
+*         mu = model.matrix(
+*           pass.m,
+*           data = df %&gt;%
+*             filter(tutoring) %&gt;%
+*             mutate(tutoring = F)
+*         ) %*%
+*           rnorm(nrow(coefs.df),
+*                 mean = coefs.df$est,
+*                 sd = coefs.df$se)
+*       )
+*     }
+*   )
   ),
   {
     temp.df %&gt;%
-      mutate(
-*       mu = model.matrix(pass.m,
-*                         data = temp.df) %*%
-*         rnorm(nrow(coefs.df),
-*               mean = coefs.df$est,
-*               sd = coefs.df$se),
-*       pred = runif(n()) &lt; invlogit(mu)
-      ) %&gt;%
+      mutate(pred = runif(n()) &lt; invlogit(mu)) %&gt;%
       group_by(draw) %&gt;%
       summarise(pred.passed = sum(pred)) %&gt;%
       ungroup() %&gt;%
@@ -1909,13 +1909,7 @@ extra.p = with(
 
 --
 
-- Strong cauasal interpretation
-
-{{content}}
-
---
-
-- Range of uncertainty depends in part on how many simulations you run
+- Strong causal interpretation
 
 ---
 
@@ -1935,12 +1929,15 @@ extra.p = with(
 
 ```r
 extra.group.p = with(
-  list(temp.df = expand.grid(draw = 1:10000,
-                             id = df$id[df$tutoring]) %&gt;%
-         left_join(df, by = "id") %&gt;% mutate(tutoring = F)),
+  list(
+    temp.df = map_dfr(1:5000,
+                      function(d) { data.frame(draw = d,
+                                               pet.type = df$pet.type[df$tutoring],
+                                               mu = model.matrix(pass.m, data = df %&gt;% filter(tutoring) %&gt;% mutate(tutoring = F)) %*%
+                                                 rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se)) })
+  ),
   { temp.df %&gt;%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se),
-             pred = runif(n()) &lt; invlogit(mu)) %&gt;%
+      mutate(pred = runif(n()) &lt; invlogit(mu)) %&gt;%
 *     group_by(pet.type, draw) %&gt;%
       summarise(pred.passed = sum(pred), .groups = "keep") %&gt;%
       ungroup() %&gt;%
@@ -1953,11 +1950,7 @@ extra.group.p = with(
 *               by = "pet.type") %&gt;%
       mutate(pet.type = str_to_title(pet.type), extra.passed = actual.passed - pred.passed) %&gt;%
       group_by(pet.type) %&gt;%
-      summarise(lower.95 = quantile(extra.passed, 0.025),
-                lower.50 = quantile(extra.passed, 0.25),
-                median = median(extra.passed),
-                upper.50 = quantile(extra.passed, 0.75),
-                upper.95 = quantile(extra.passed, 0.975)) %&gt;%
+      summarise(lower.95 = quantile(extra.passed, 0.025), lower.50 = quantile(extra.passed, 0.25), median = median(extra.passed), upper.50 = quantile(extra.passed, 0.75), upper.95 = quantile(extra.passed, 0.975)) %&gt;%
       ungroup() %&gt;%
       mutate(pet.type = fct_reorder(pet.type, median)) %&gt;%
       ggplot(aes(x = pet.type)) +
@@ -2033,8 +2026,6 @@ extra.group.p = with(
 
 # Potential successes compared to group size
 
---
-
 - Attempt to show _both_ the effect size for each group _and_ the overall size of that group
 
 --
@@ -2066,15 +2057,14 @@ extra.group.p = with(
 ```r
 potential.group.p = with(
   list(
-*   temp.df = expand.grid(
-*     draw = 1:10000,
-*     id = df$id[!df$tutoring]
-*   ) %&gt;%
-*     left_join(df, by = "id") %&gt;%
-*     mutate(tutoring = T)
+    temp.df = map_dfr(1:5000,
+                      function(d) { data.frame(draw = d,
+                                               pet.type = df$pet.type[!df$tutoring],
+                                               mu = model.matrix(pass.m, data = df %&gt;% filter(!tutoring) %&gt;% mutate(tutoring = T)) %*%
+                                                 rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se)) })
   ),
   { temp.df %&gt;%
-      mutate(mu = model.matrix(pass.m, data = temp.df) %*% rnorm(nrow(coefs.df), mean = coefs.df$est, sd = coefs.df$se), pred = runif(n()) &lt; invlogit(mu)) %&gt;%
+      mutate(pred = runif(n()) &lt; invlogit(mu)) %&gt;%
       group_by(pet.type, draw) %&gt;%
 *     summarise(n.passed = sum(pred),
 *               .groups = "keep") %&gt;%
