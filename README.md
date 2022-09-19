@@ -1,4 +1,5 @@
 # Visualizing logistic regression results for non-technical audiences
+### Abby Kaplan and Keiko Cawley
 
 Communicating the results of a logistic regression to a non-technical audience can be challenging because the parameters are on a log-odds scale. This repository contains several visualization options for presenting logistic regression results that are both interpretable and meaningful to your stakeholders who might not know what a log-odds or odds ratio is. 
 
