@@ -50,60 +50,58 @@ fun <- function(p, n){
 
 extract.nomo.df<- map2_dfr(predictor.names, list.position, fun)
 
-nomogram.df <- extract.nomo.df %>%
-    filter(!name %in% c("cs.height", "cs.prior.gpa")) %>%
-    rbind(extract.nomo.df %>%
-          filter(name == "cs.height") %>%
-          mutate(value = as.character(
-              round(as.integer(value)*sd(df$height) + mean(df$height), 0)),
-              name = "height")
-          ) %>%
-    rbind(extract.nomo.df %>%
-              filter(name == "cs.prior.gpa") %>%
-              mutate(value = round(as.numeric(value)*sd(df$prior.gpa) + mean(df$prior.gpa), 2),
-                     value = if_else(value > 4, 4.00, value),
-                     value = as.character(value),
-                  name = "prior.gpa")
-          ) %>%
-    rbind(data.frame(nomogram[8][[1]]) %>%
-              rename("points" = "x") %>%
-              mutate(name = "total.points",
-                     value = as.character(points),
-                     points = seq(0, 100, length.out = 9),
-                     type = name)
-    ) %>%
-    rbind(data.frame(nomogram[9][[1]][1:2]) %>%
-              rename("points" = "x",
-                     "value" = "x.real") %>%
-              mutate(name = "probability",
-                     value = as.character(value),
-                     points = points*0.625,
-                     type = name
-              )
-    ) %>%
-    rbind(data.frame(points = seq(0, 100, by = 10))%>%
-              mutate(name = "points",
-                     value = as.character(seq(0, 100, by = 10)),
-                     type = "points")
-          ) %>%
-    group_by(name) %>%
-    mutate(max.point = max(points),
-           min.point = min(points)) %>%
-    ungroup() %>%
-    mutate(type = factor(type, levels = c("probability",
-                                          "total.points",
-                                          "coefficient",
-                                          "points"), ordered = T),
-           pretty.parameter = case_when(name == "prior.gpa" ~ "Prior GPA",
-                                        name == "height" ~ "Height",
-                                        name == "pet.type" ~ "Pet type",
-                                        name == "favorite.color" ~ "Favorite color",
-                                        name == "tutoring" ~ "Tutoring",
-                                        name == "glasses" ~ "Glasses",
-                                        name == "mac" ~ "Mac",
-                                        name == "total.points" ~ "Total points",
-                                        name == "probability" ~ "Probability",
-                                        name == "points" ~ "Points"))
+extract.nomo.df %>%
+  mutate(name = gsub("cs.", "", name)) %>%
+  left_join(df %>%
+              dplyr::select(id, height, prior.gpa) %>%
+              pivot_longer(cols = c("height", "prior.gpa")) %>%
+              group_by(name) %>%
+              summarise(mean = mean(value),
+                        sd = sd(value)) %>%
+              ungroup(),
+            by = "name") %>%
+  mutate(value = if_else(name %in% c("height", "prior.gpa"),
+                         as.character(round((as.numeric(value) * sd) + mean)),
+                         value)) %>%
+  rbind(data.frame(nomogram[8][[1]]) %>%
+            rename("points" = "x") %>%
+            mutate(name = "total.points",
+                   value = as.character(points),
+                   points = seq(0, 100, length.out = 9),
+                   type = name)
+  ) %>%
+  rbind(data.frame(nomogram[9][[1]][1:2]) %>%
+            rename("points" = "x",
+                   "value" = "x.real") %>%
+            mutate(name = "probability",
+                   value = as.character(value),
+                   points = points*0.625,
+                   type = name
+            )
+  ) %>%
+  rbind(data.frame(points = seq(0, 100, by = 10))%>%
+            mutate(name = "points",
+                   value = as.character(seq(0, 100, by = 10)),
+                   type = "points")
+        ) %>%
+  group_by(name) %>%
+  mutate(max.point = max(points),
+         min.point = min(points)) %>%
+  ungroup() %>%
+  mutate(type = factor(type, levels = c("probability",
+                                        "total.points",
+                                        "coefficient",
+                                        "points"), ordered = T),
+         pretty.parameter = case_when(name == "prior.gpa" ~ "Prior GPA",
+                                      name == "height" ~ "Height",
+                                      name == "pet.type" ~ "Pet type",
+                                      name == "favorite.color" ~ "Favorite color",
+                                      name == "tutoring" ~ "Tutoring",
+                                      name == "glasses" ~ "Glasses",
+                                      name == "mac" ~ "Mac",
+                                      name == "total.points" ~ "Total points",
+                                      name == "probability" ~ "Probability",
+                                      name == "points" ~ "Points"))
 
 ## ---- create_nomogram ----
 
