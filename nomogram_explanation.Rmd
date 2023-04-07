@@ -1,0 +1,78 @@
+---
+title: "Nomograms"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = F, warning = F}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(rms)
+library(ggrepel)
+library(knitr)
+theme_set(theme_bw())
+opts_chunk$set(echo = T, message = F, warning = F, error = F, fig.retina = 3,
+               fig.align = "center", fig.width = 6, fig.asp = 0.7)
+```
+
+
+* *I'm thinking that maybe this should go after the banana graphs? Or at least somewhere in the probability section.*
+* *Is using `good.color` for the arrow colors okay?*
+
+
+# Nomograms
+
+The nomogram is graphical tool which can be used for quick computations of probability. Using our Balloon-Animal Making students, the nomogram would be useful for a stakeholder who may need to calculate a specific student's probability of passing the class. For example, your stakeholder may need to know what the probability of passing Balloon-Animal Making is for a student with a 3.5 prior GPA, height of 5 ft 4, owns a pet fish, favorite color is green, did not attend tutoring, wears glasses, and uses a Mac. 
+
+Additionally, nomograms are not only a helpful computation tool, but they can help audiences visualize continuous predictors better than any of the previous visuals. So far, for each discrete predictor we could present the point estimate for each of the non-reference categories. For the continuous variables, we could only present one point estimate even though a continuous variable contains a *range* of values. For example, for each of the visuals so far, the discrete predictor "Favorite color" had a y-axis value for Red, Orange, and Green, but the continuous variable "Prior GPA" did not have a y-axis tick for "Prior GPA" equal to 3.86, 2.37, 1.98, 4.00, etc. Nomograms, however, can show the whole range of values in your dataset for a continuous predictors. This is helpful, particularly for audience members who might need help making sense of their predictor within the context of the other predictors. 
+
+```{r colors, include = F}
+knitr::read_chunk("visual_folder/colors.R")
+```
+```{r color-palette, include = F}
+```
+```{r fit_model, include = F}
+knitr::read_chunk("R_code/fit_model.R")
+```
+```{r load-data, include = F}
+```
+```{r prepare-data-continuous, include = F}
+```
+```{r prepare-data-categorical, include = F}
+```
+```{r nomograms, include = F}
+knitr::read_chunk("visual_folder/nomograms.R")
+```
+
+The way that the nomogram works is that each predictor is assigned a range of points, and each value within a predictor corresponds to a point. The points assigned to each value should reflect the amount of contribution a particular predictor's value has on the outcome of interest's probability.
+
+```{r create_logit_model_with_rms, include = F}
+```
+
+```{r create_nomogram_using_rms, include = F}
+```
+
+```{r  create_dataframe_for_nomogram_values, include = F}
+```
+
+```{r create_nomogram, fig.asp = 0.8, fig.width = 11}
+```
+
+For a user to compute the probability, they would first to need to identify the point associated with each value for each predictor. In the figure below, one blue arrow shows that a student who has a pet dog will correspond with roughly 13 points, while the other blue arrow shows that a student who has a GPA of roughly 3.4 corresponds with 80 points. 
+
+```{r nomogram_identify_points, fig.asp = 0.8, fig.width = 11}
+```
+
+After identifying the number of points for each predictor, the next step is to sum all of the points obtained from each predictor's value of interest to obtain the total points. After obtaining the total point value, we can identify the probability value which aligns with the total point value by drawing a straight line from the total points line to the parallel probability line. In the example below, if we found that a student's total points equaled 80 points then the probability of passing Balloon-Animal Making would be roughly 28%. 
+
+```{r nomogram_identify_probability, fig.asp = 0.8, fig.width = 11}
+```
+
+This visual cannot show which predictors are significant as seamlessly as the previous visuals. One option to address this issue would be to color the axis ticks based on significance, but this would likely cause more visual clutter than aide. Another option would be to change the shape of each x-axis tick label which is significant, but without color and with how small the tick label may be, the significance will not be as visibly obvious as the previous visuals. Another visual element nomograms cannot show is a confidence interval. Furthermore, much like the banana graphs, this visual will likely require some explanation if the audience member is not familiar with nomograms. Lastly, depending on your comfort level in programming, creating nomograms without a package may be time consuming. Although the `rms` package has a `nomogram` function which can easily be used to create nomograms, adjusting and customizing the default plot from this function may also be time consuming. For example, we centered and standardized the continuous predictors for the model, which means that the `nomogram` will display the center and standardized variable which your audience member will likely not be able to meaningfully interpret. 
+
+
+
