@@ -1,12 +1,12 @@
 ---
 title: "Visualizing logistic regression results for non-technical audiences"
-author: "Abby Kaplan and Keiko Cawley"
+author: "Abby Kaplan and Keiko Cawley<br/>Salt Lake Community College"
 institute: "AIR Forum"
 date: "May 31, 2023"
 output:
   xaringan::moon_reader:
     lib_dir: libs
-    css: ["xaringan-themer.css"]
+    css: ["xaringan-themer-air.css"]
     nature:
       highlightStyle: github
       highlightLines: true

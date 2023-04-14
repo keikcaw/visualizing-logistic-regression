@@ -29,17 +29,17 @@ body {
 h1, h2, h3 {
   font-family: 'Yanone Kaffeesatz';
   font-weight: normal;
+  background-color: #003865;
+  color: #FFCD00;
 }
 .remark-slide-content {
   background-color: #FFFFFF;
   font-size: 20px;
-  
-  
-  
   padding: 1em 4em 1em 4em;
 }
 .remark-slide-content h1 {
     font-size: 55px;
+    padding: 10px 10px 0px 10px;
 }
 .remark-slide-content h2 {
     font-size: 45px;
@@ -64,9 +64,14 @@ h1, h2, h3 {
   opacity: 1;
   font-size: 0.9em;
 }
+.inverse > .remark-slide-number {
+  color: #FFCD00;
+  opacity: 1;
+  font-size: 0.9em;
+}
 strong{color:#00A8E1;}
 a, a > code {
-  color: #00A8E1;
+  color: #FFCD00;
   text-decoration: none;
 }
 .footnote {
@@ -77,15 +82,15 @@ a, a > code {
   font-size: 0.9em;
 }
 .remark-code-line-highlighted {
-  background-color: rgba(255,255,0,0.5);
+  background-color: rgba(255,239,189,0.5);
 }
 .inverse {
-  background-color: #272822;
-  color: #d6d6d6;
+  background-color: #003865;
+  color: #FFCD00;
   text-shadow: 0 0 20px #333;
 }
 .inverse h1, .inverse h2, .inverse h3 {
-  color: #f3f3f3;
+  color: #FFCD00;
 }
 .title-slide .remark-slide-number {
   display: none;
