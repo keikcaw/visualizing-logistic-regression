@@ -1,12 +1,12 @@
 ---
 title: "Visualizing logistic regression results for non-technical audiences"
-author: "Abby Kaplan and Keiko Cawley"
+author: "Abby Kaplan and Keiko Cawley<br/>Salt Lake Community College"
 institute: "AIR Forum"
 date: "May 31, 2023"
 output:
   xaringan::moon_reader:
     lib_dir: libs
-    css: ["xaringan-themer.css"]
+    css: ["xaringan-themer-air.css"]
     nature:
       highlightStyle: github
       highlightLines: true
@@ -56,29 +56,20 @@ class: inverse, center, middle
 # Logistic regression review
 
 ---
-# Logistic regression: Binary outcomes
+
+# The design of logistic regression
 
 - Use logistic regression to model a binary outcome
 
 --
 
-- Examples from higher education:
-
---
-
-  - Did the student pass the class?
-
---
-
-  - Did the student enroll for another term?
+- Example from higher education:
 
 --
 
   - Did the student graduate?
 
----
-
-# The design of logistic regression
+--
 
 - We want to model the probability that the outcome happened
 
@@ -223,20 +214,6 @@ table %>%
 
 ---
 
-# Dataset
-
-```{r load-data}
-```
-
-```{r preview_dataset}
-df %>%
-  head(12) %>%
-  kbl() %>%
-  kable_styling(font_size = 12)
-```
-
----
-
 # Model
 
 - Dependent variable: did the student pass?
@@ -245,12 +222,21 @@ df %>%
 
 - Continuous variables were centered and standardized
 
+```{r load-data}
+```
+
 ```{r prepare-data-continuous}
 ```
 
+--
+
 - Reference levels for categorical variables:
 
+--
+
   - Pet type: none
+
+--
 
   - Favorite color: blue
 
@@ -289,42 +275,18 @@ df %>%
 
 ---
 
-# Color palette
-
-``` {r get-coefficients}
-```
-
-```{r colors, include = F}
-knitr::read_chunk("visual_folder/colors.R")
-```
-
-```{r color-palette}
-```
-
-```{r}
-data.frame(color.name = paste(c("good", "neutral", "bad"), "color", sep = "."),
-           hex.code = c(good.color, neutral.color, bad.color)) %>%
-  mutate(color.name = fct_relevel(color.name, "good.color",
-                                  "neutral.color")) %>%
-  ggplot(aes(x = color.name, y = 1, color = hex.code)) +
-  geom_point(size = 30) +
-  scale_color_identity() +
-  theme_void() +
-  theme(axis.text.x = element_text(size = 14, margin = margin(t = 0, b = 5)))
-```
-
----
-
 class: inverse, center, middle
 
 # Visualization family 1:
 
 # Presenting model coefficients
 
-
 ---
 
 # Coefficients in a table
+
+``` {r get-coefficients, include = F}
+```
 
 ```{r}
 coefs.df %>%
@@ -344,6 +306,13 @@ coefs.df %>%
 ---
 
 # Change in log odds
+
+```{r colors, include = F}
+knitr::read_chunk("visual_folder/colors.R")
+```
+
+```{r color-palette, include = F}
+```
 
 ```{r log_odds, include = F}
 knitr::read_chunk("visual_folder/log_odds.R")
@@ -819,10 +788,6 @@ $$p_i = \mbox{logit}^{-1}(\beta_0 + \beta_i)$$
 
 $$p_j = \mbox{logit}^{-1}(\beta_0 + \beta_j\Delta x_j)$$
 
---
-
-- To show uncertainty, get confidence interval before inverse logit transformation
-
 ---
 
 # Probabilities relative to a baseline
@@ -943,52 +908,6 @@ prob.baseline.p.half +
 --
 
 - Doesn't show full range of possible effects at different baselines
-
----
-
-# Probabilities relative to a baseline: Arrows
-
-```{r probability-relative-to-some-baseline-with-arrows, fig.show = "hide"}
-```
-
-```{r out.width = "100%"}
-prob.baseline.arrows.p  = prob.baseline.arrows.p +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0.9, 11.1), clip = "off")
-prob.baseline.arrows.p.full = prob.baseline.arrows.p +
-  ggtitle(str_wrap(gsub("\\n", " ", prob.baseline.arrows.p$labels$title), 50))
-prob.baseline.arrows.p.full
-```
-
----
-
-# Probabilities relative to a baseline: Arrows
-
-.pull-left[
-```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
-prob.baseline.arrows.p.half = prob.baseline.arrows.p +
-  guides(color = guide_legend(nrow = 3)) +
-  theme(legend.position = "bottom")
-prob.baseline.arrows.p.half
-```
-]
-
---
-
-.pull-right[
-- Emphasizes  direction of effect
-
-{{content}}
-]
-
---
-
-- Doesn't show uncertainty around estimates
-
-{{content}}
-
---
-
-- Strong causal implications
 
 ---
 
@@ -1133,10 +1052,6 @@ prob.group.p.half +
 {{content}}
 ]
 
---
-
-- We can use arrows here as well
-
 ---
 
 # Multiple baselines by group: Cons
@@ -1265,12 +1180,18 @@ banana.p +
 
 ```{r banana-graph-multiple, fig.show = "hide"}
 ```
-
-```{r out.width = "100%"}
+.center[
+```{r out.width = "100%", fig.width = 9}
 banana.multiple.p = banana.multiple.p +
-  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off")
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off") +
+  scale_fill_identity(guide = "legend", labels = c("Negative", "Not significant")) +
+  theme(legend.position = "right") +
+  labs(title ="Estimated relationship to probability of passing",
+       subtitle = "By pet type",
+       fill = "Relationship to\nprobability\nof passing")
 banana.multiple.p
 ```
+]
 
 ---
 
