@@ -772,22 +772,6 @@ $$p_0 = \mbox{logit}^{-1}(\beta_0)$$
 
 $$p_i = \mbox{logit}^{-1}(\beta_0 + \beta_i)$$
 
---
-
-- For a continuous predictor $j$, pick a change in predictor value that makes sense
-
---
-
-  - One standard deviation
-
---
-
-  - A context-specific benchmark (e.g., 1 point for GPA, 100 points on the SAT)
-
---
-
-$$p_j = \mbox{logit}^{-1}(\beta_0 + \beta_j\Delta x_j)$$
-
 ---
 
 # Probabilities relative to a baseline
@@ -908,24 +892,6 @@ prob.baseline.p.half +
 --
 
 - Doesn't show full range of possible effects at different baselines
-
----
-
-# Multiple baselines by group
-
-- Instead of one baseline probability, why not several?
-
---
-
-- Example: show effect of $i$ for each level of categorical variable $j$
-
---
-
-$$p_{j1} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1})$$
-
---
-
-$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$
 
 ---
 
@@ -1444,32 +1410,6 @@ extra.group.p
 --
 
 - (Your audience may care about counts, percentages, or both)
-
----
-
-# Potential successes compared to group size
-
-- Attempt to show _both_ the effect size for each group _and_ the overall size of that group
-
---
-
-- Here, we switch the direction of the counterfactual
-
---
-
-  - Start with untutored students
-
---
-
-  - How many would have passed with tutoring?
-
---
-
-  - We think this emphasizes the benefits of tutoring more clearly in this graph
-
---
-
-  - Either direction is possible; do what makes sense in your context!
 
 ---
 
