@@ -1,0 +1,1603 @@
+---
+title: "Visualizing logistic regression results for non-technical audiences"
+author: "Abby Kaplan and Keiko Cawley"
+date: "October 17, 2023"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["xaringan-themer-rmair.css"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+
+---
+
+class: inverse, center, middle
+
+# GitHub
+### https://github.com/keikcaw/visualizing-logistic-regression
+
+`r knitr::opts_knit$set(root.dir='..')`
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(lme4)
+library(logitnorm)
+library(kableExtra)
+library(cowplot)
+library(grid)
+library(gridExtra)
+library(patchwork)
+library(knitr)
+theme_set(theme_bw())
+opts_chunk$set(echo = F, message = F, warning = F, error = F, fig.retina = 3,
+               fig.align = "center", fig.width = 6, fig.asp = 0.618,
+               out.width = "70%")
+```
+
+```{css}
+.remark-slide-content h1 {
+  margin-bottom: 0em;
+}
+.remark-code {
+  font-size: 60% !important;
+}
+```
+
+---
+
+class: inverse, center, middle
+
+# Logistic regression review
+
+---
+# Logistic regression: Binary outcomes
+
+- Use logistic regression to model a binary outcome
+
+--
+
+- Examples from higher education:
+
+--
+
+  - Did the student pass the class?
+
+--
+
+  - Did the student enroll for another term?
+
+--
+
+  - Did the student graduate?
+
+---
+
+# The design of logistic regression
+
+- We want to model the probability that the outcome happened
+
+--
+
+- But probabilities are bounded between 0 and 1
+
+--
+
+- Instead, we model the logit of the probability:
+
+$$
+\mbox{logit}(p) = \log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+---
+
+class: inverse, center, middle
+
+# What's the problem?
+
+---
+
+layout: true
+
+# Just tell me "the" effect
+
+- Stakeholders often want to know whether something affects outcomes, and by how much
+
+---
+
+--
+
+- But we don't model probabilities directly
+
+$$
+\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+---
+
+- But we don't model probabilities directly
+
+$$
+\boxed{\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right)} = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n
+$$
+
+--
+
+- We can solve for _p_:
+
+$$
+\begin{aligned}
+p & = \mbox{logit}^{-1}(\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n) \\ & \\
+& = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}
+\end{aligned}
+$$
+
+---
+
+layout: true
+
+# "The" effect is nonlinear in _p_
+
+$$
+\begin{aligned}
+p & = \frac{e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}{1 + e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}}
+\end{aligned}
+$$
+
+---
+
+--
+
+```{r}
+logistic.curve.0.p = ggplot() +
+  stat_function(fun = function(x) (exp(x)/(1+(exp(x)))), color = "#009DD8") +
+  scale_x_continuous(expression(beta[0]+beta[1]~x[1]~'+'~'...+'~beta[n]~x[n]),
+                     limits = c(-6, 6), breaks = seq(-6, 6, 2)) +
+  scale_y_continuous("probability (p)", limits = c(0, 1))
+logistic.curve.0.p
+```
+
+---
+
+```{r}
+logistic.curve.1.p = logistic.curve.0.p +
+  annotate("segment", x = -3, xend = -2, y = invlogit(-3), yend = invlogit(-3),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = -2, xend = -2, y = invlogit(-3), yend = invlogit(-2),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = -3.5, y = 0.3,
+           label = str_wrap("A 1-unit change here leads to a small change in probability",
+                            20))
+logistic.curve.1.p
+```
+
+---
+
+```{r}
+logistic.curve.2.p = logistic.curve.1.p +
+  annotate("segment", x = 0, xend = 1, y = invlogit(0), yend = invlogit(0),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("segment", x = 1, xend = 1, y = invlogit(0), yend = invlogit(1),
+           arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+  annotate("text", x = 3, y = 0.6,
+           label = str_wrap("A 1-unit change here leads to a large change in probability",
+                            20))
+logistic.curve.2.p
+```
+
+---
+
+layout: false
+
+class: inverse, center, middle
+
+# Sample dataset and model
+
+---
+
+# Dataset
+
+```{r fit_model, include = F}
+knitr::read_chunk("R_code/fit_model.R")
+```
+
+- Our simulated dataset describes students who took Balloon Animal-Making 201 at University Imaginary
+
+--
+
+```{r dataset_summary_table}
+table <- data.frame(
+  Variable = c("Mac user", "Wear glasses", "Pet type", "Favorite color", "Prior undergraduate GPA", "Height", "Went to tutoring", "Passed"),
+  Possible.Responses = c("TRUE/FALSE", "TRUE/FALSE", "dog, cat, fish, none", "blue, red, green, orange", "0.0-4.0", "54-77 inches", "TRUE/FALSE", "TRUE/FALSE"),
+  Variable.Type = c("binary", "binary", "categorical", "categorical", "continuous", "continuous", "binary", "binary")
+) 
+table %>%
+  kbl(col.names = gsub("[.]", " ", names(table))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
+```
+
+---
+
+# Dataset
+
+```{r load-data, echo = T}
+```
+
+```{r preview_dataset}
+df %>%
+  head(12) %>%
+  kbl() %>%
+  kable_styling(font_size = 12)
+```
+
+---
+
+# Model
+
+- Dependent variable: did the student pass?
+
+--
+
+- Continuous variables were centered and standardized
+
+```{r prepare-data-continuous}
+```
+
+--
+
+- Reference levels for categorical variables:
+
+  - Pet type: none
+
+  - Favorite color: blue
+
+```{r prepare-data-categorical}
+```
+
+---
+
+# Model
+
+```{r model}
+```
+
+---
+
+# Model
+
+```{r model, highlight.output = c(4, 5, 7, 9, 11, 12, 13)}
+```
+
+
+---
+
+# Causality disclaimer
+
+- Some visualizations strongly imply a causal interpretation
+
+--
+
+- It's your responsibility to evaluate whether a causal interpretation is appropriate
+
+--
+
+- If the data doesn't support a causal interpretation, **don't use a visualization that implies one**
+
+
+---
+
+---
+
+class: inverse, center, middle
+
+# Visualization family 1:
+
+# Presenting model coefficients
+
+
+---
+
+# Coefficients in a table
+
+``` {r get-coefficients, include = F}
+```
+
+```{r}
+coefs.df %>%
+  dplyr::select(-parameter) %>%
+  kbl(col.names = c("Parameter", "Estimate", "Standard error", "z", "p")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                font_size = 14, full_width = F) %>%
+  row_spec(0, align = "c")
+```
+
+---
+
+# Coefficients in a table
+
+![blinking_meme](blinking_meme.jpg)
+
+---
+
+# Change in log odds
+
+```{r colors, include = F}
+knitr::read_chunk("visual_folder/colors.R")
+```
+
+```{r color-palette, include = F}
+```
+
+```{r log_odds, include = F}
+knitr::read_chunk("visual_folder/log_odds.R")
+```
+
+```{r change-in-log-odds, fig.show = "hide"}
+```
+
+```{r change_in_log_odds_plot, out.width = "100%"}
+log.odds.p = log.odds.p +
+  coord_flip(xlim = c(0.9, 11.1), ylim = c(-1.6, 1.1), clip = "off")
+log.odds.p.full = log.odds.p +
+  ggtitle(str_wrap(gsub("\\n", " ", log.odds.p$labels$title), 50))
+log.odds.p.full
+```
+
+---
+
+# Change in log odds: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+log.odds.p.half = log.odds.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom")
+log.odds.p.half
+```
+]
+
+--
+
+.pull-right[
+- It's clear which relationships are positive and which are negative
+
+{{content}}
+]
+
+--
+
+- The plot has a transparent relationship to the fitted model
+
+---
+
+# Change in log odds: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+log.odds.p.half +
+  annotate("rect", ymin = -1.2, ymax = 1.2, xmin = -0.5, xmax = 0.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+- It's clear which relationships are positive and which are negative
+
+- The plot has a transparent relationship to the fitted model
+
+- Numbers all in one place: a single scale instead of a table of numbers
+]
+
+---
+
+# Change in log odds: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+log.odds.p.half
+```
+]
+
+---
+
+# Change in log odds: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+log.odds.p.half +
+  annotate("rect", ymin = -1, ymax = 0.57, xmin = -1.2, xmax = -0.2,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+- The magnitude of effect is in the log odds scale
+
+{{content}}
+]
+
+--
+
+- What is a 0.4 change in the log odds?
+
+{{content}}
+
+--
+
+- Is the change between 0.4 and 0.8 log odds "big" or "small"?
+
+{{content}}
+
+--
+
+- You probably don't want to give your audience a tutorial on the inverse logit function
+
+---
+
+# Secret log odds
+
+```{r change-in-log-odds-adjusted-axis, fig.show = "hide"}
+```
+
+```{r change_in_log_odds_adjusted_axis_plot, out.width = "100%"}
+secret.log.odds.p = secret.log.odds.p +
+  coord_flip(xlim = c(0.9, 11.1), ylim = c(-1.6, 1.5), clip = "off")
+secret.log.odds.p.full = secret.log.odds.p +
+  ggtitle(str_wrap(gsub("\\n", " ", secret.log.odds.p$labels$title), 50))
+secret.log.odds.p.full
+```
+
+---
+
+# Secret log odds: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+secret.log.odds.p.half = secret.log.odds.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom")
+secret.log.odds.p.half
+```
+]
+
+---
+
+# Secret log odds: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+secret.log.odds.p.half +
+  annotate("rect", ymin = -1.45, ymax = 1.45, xmin = -1.2, xmax = 0.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+--
+
+.pull-right[
+- Easy: just relabel the x-axis
+
+{{content}}
+]
+
+--
+
+- No numbers for your audience to misinterpret
+
+---
+
+# Secret log odds: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+secret.log.odds.p.half
+```
+]
+
+--
+
+.pull-right[
+- Can't convey absolute magnitude of an effect
+
+{{content}}
+]
+
+--
+
+- Your audience might ask "where are the numbers?" anyway
+
+---
+
+layout: true
+
+#  Change in odds ratio
+
+- Your audience may be more familiar with the "odds" part of log odds
+
+---
+
+---
+
+$$\log\left(\begin{array}{c}\frac{p}{1 - p}\end{array}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n$$
+
+---
+
+$$\log\left(\boxed{\begin{array}{c}\frac{p}{1 - p}\end{array}}\right) = \beta_0 + \beta_1x_1 + \ldots + \beta_nx_n$$
+
+--
+
+- Can't we just exponentiate to get the odds?
+
+--
+
+$$\frac{p}{1 - p} = e^{\beta_0 + \beta_1x_1 + \ldots + \beta_nx_n}$$
+
+--
+
+- Now the effect of a coefficient is multiplicative, not additive
+
+--
+
+$$\frac{p}{1 - p} = e^{\beta_ix_i} \cdot e^{\beta_0 + \beta_1x_1 + \ldots + \beta_{i-1}x_{i-1} + \beta_{i+1}x_{i+1} + \ldots + \beta_nx_n}$$
+
+---
+
+layout: false
+
+# Change in odds ratio
+
+```{r odds_ratio, include = F, cache = F}
+knitr::read_chunk("visual_folder/odds.R")
+```
+
+```{r odds-ratio-adjusted-axis, fig.show = "hide"}
+```
+
+```{r out.width = "100%"}
+odds.ratio.p = odds.ratio.p +
+  coord_flip(xlim = c(0.9, 11.1), ylim = c(0, 3), clip = "off")
+odds.ratio.p.full = odds.ratio.p +
+  ggtitle(str_wrap(gsub("\\n", " ", odds.ratio.p$labels$title), 50))
+odds.ratio.p.full
+```
+
+---
+
+# Change in odds ratio: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half = odds.ratio.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom")
+odds.ratio.p.half
+```
+]
+
+--
+
+.pull-right[
+- Changes in odds might be easier to describe than changes in log odds
+
+{{content}}
+]
+
+--
+
+- Still pretty easy: a simple transformation of your model coefficients
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half
+```
+]
+
+--
+
+.pull-right[
+- Not the way we usually describe odds
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half
+```
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half
+```
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
+
+  - The unfamiliar format may undo the benefit of using a familiar concept
+
+{{content}}
+]
+
+--
+
+- Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = -1.2, xmax = 0.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
+
+  - The unfamiliar format may undo the benefit of using a familiar concept
+
+- Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
+
+  - Percent change in odds (300% = triple the odds) might be misinterpreted as a probability
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = -1.2, xmax = 0.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+- Not the way we usually describe odds
+
+  - Usually use integers: "3-to-1" or "2-to-5", not "3" or "0.4"
+
+  - The unfamiliar format may undo the benefit of using a familiar concept
+
+- Exponentiated coefficients don't represent odds directly; they represent _changes_ in odds
+
+  - Percent change in odds (300% = triple the odds) might be misinterpreted as a probability
+
+  - Now we're pretty far removed from familiar scales
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+log.odds.p.half
+```
+]
+
+.pull-right[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half
+```
+]
+
+---
+
+# Change in odds ratio: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+ log.odds.p.half +
+  annotate("rect", ymin = -1.8, ymax = 1.3, xmin = 10.5, xmax = 11.5,
+           fill = NA, color = "red", size = 2) +
+  annotate("rect", ymin = -1.8, ymax = 1.3, xmin = 0.5, xmax = 1.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+odds.ratio.p.half +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = 10.5, xmax = 11.5,
+           fill = NA, color = "red", size = 2) +
+  annotate("rect", ymin = -0.2, ymax = 3.2, xmin = 0.5, xmax = 1.5,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+- The scale is expanded for positive effects and compressed for negative effects
+
+---
+
+class: inverse, center, middle
+
+# Visualization family 2:
+
+# Presenting probabilities
+
+---
+
+# Probabilities relative to a baseline
+
+-  Problem with probabilities: change in percentage points depends on baseline starting value
+
+--
+
+- We can choose an appropriate baseline probability, then compute the marginal effect of a predictor given that baseline
+
+--
+
+- Options for baseline:
+
+--
+
+  - Model intercept
+
+--
+
+  - Observed outcome % in dataset (similar to intercept if continuous predictors are centered and other coefficients aren't too large)
+
+--
+
+  - Observed outcome % for a certain group (e.g., students with no tutoring)
+
+--
+
+  - Some % that's meaningful in context (e.g., 85% pass rate in typical years)
+
+---
+
+# Probabilities relative to a baseline
+
+- Baseline probability: inverse logit of the intercept
+
+$$p_0 = \mbox{logit}^{-1}(\beta_0)$$
+
+--
+
+- Probability with discrete predictor $i$: inverse logit of intercept + predictor coefficient
+
+$$p_i = \mbox{logit}^{-1}(\beta_0 + \beta_i)$$
+
+--
+
+- For a continuous predictor $j$, pick a change in predictor value that makes sense
+
+--
+
+  - One standard deviation
+
+--
+
+  - A context-specific benchmark (e.g., 1 point for GPA, 100 points on the SAT)
+
+--
+
+$$p_j = \mbox{logit}^{-1}(\beta_0 + \beta_j\Delta x_j)$$
+
+--
+
+- To show uncertainty, get confidence interval before inverse logit transformation
+
+---
+
+# Probabilities relative to a baseline
+
+```{r probability_baseline, include = F, cache = F}
+knitr::read_chunk("visual_folder/probability_baseline.R")
+```
+
+```{r probability-relative-to-some-baseline-no-arrows, fig.show = "hide"}
+```
+
+```{r probability_baseline_plot, out.width = "100%"}
+prob.baseline.p = prob.baseline.p +
+  coord_flip(xlim = c(0.9, 11.1),  ylim = c(0, 1), clip = "off")
+prob.baseline.p.full = prob.baseline.p +
+  ggtitle(str_wrap(gsub("\\n", " ", prob.baseline.p$labels$title), 50))
+prob.baseline.p.full
+```
+
+- (Uncertainty in intercept is not represented here)
+
+---
+
+# Probabilities relative to a baseline: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.baseline.p.half = prob.baseline.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom")
+prob.baseline.p.half
+```
+]
+
+--
+
+.pull-right[
+- Familiar scale: probabilities, expressed as percentages
+
+{{content}}
+]
+
+--
+
+- Avoids the "percent change" formulation (common but misleading)
+
+---
+
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.baseline.p.half +
+  annotate("rect", ymin = invlogit(intercept) - 0.05,
+           ymax = invlogit(intercept) + 0.05, xmin = 0, xmax = 12,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+--
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+{{content}}
+]
+
+--
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+---
+
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.baseline.p.half +
+  annotate("rect", ymin = invlogit(intercept) - 0.05,
+           ymax = invlogit(intercept) + 0.05, xmin = 0, xmax = 12,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+  - Students who don't use Macs, don't wear glasses, etc.
+]
+
+---
+
+# Probabilities relative to a baseline: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.baseline.p.half +
+  annotate("rect", ymin = invlogit(intercept) - 0.05,
+           ymax = invlogit(intercept) + 0.05, xmin = 0, xmax = 12,
+           fill = NA, color = "red", size = 2)
+```
+]
+
+.pull-right[
+- Have to choose a baseline; there may be no "good" choice
+
+- Using the intercept as a baseline chooses reference categories for categorical variables
+
+  - Students who don't use Macs, don't wear glasses, etc.
+
+  - Not an appropriate choice for all datasets
+
+{{content}}
+]
+
+--
+
+- Doesn't show full range of possible effects at different baselines
+
+---
+
+# Probabilities relative to a baseline: Arrows
+
+```{r probability-relative-to-some-baseline-with-arrows, fig.show = "hide"}
+```
+
+```{r probability_baseline_arrows_plot, out.width = "100%"}
+prob.baseline.arrows.p = prob.baseline.arrows.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0.9, 11.1), clip = "off")
+prob.baseline.arrows.p.full = prob.baseline.arrows.p +
+  ggtitle(str_wrap(gsub("\\n", " ", prob.baseline.p$labels$title), 50))
+prob.baseline.arrows.p.full
+```
+
+---
+
+# Probabilities relative to a baseline: Arrows
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.baseline.arrows.p.half = prob.baseline.arrows.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom")
+prob.baseline.arrows.p.half
+```
+]
+
+--
+
+.pull-right[
+- Emphasizes  direction of effect
+
+{{content}}
+]
+
+--
+
+- Doesn't show uncertainty around estimates
+
+{{content}}
+
+--
+
+- Strong causal implications
+
+---
+
+# Multiple baselines by group
+
+- Instead of one baseline probability, why not several?
+
+--
+
+- Example: show effect of $i$ for each level of categorical variable $j$
+
+--
+
+$$p_{j1} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1})$$
+
+--
+
+$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$
+
+---
+
+# Multiple baselines by group
+
+```{r probability_group, include = F}
+knitr::read_chunk("visual_folder/probability_group.R")
+```
+
+```{r probability-relative-to-some-baseline-and-group-no-arrows, fig.show = "hide"}
+```
+
+```{r probability_group_plot, out.width = "100%"}
+prob.group.p = prob.group.p +
+  coord_flip(xlim = c(0.9, 8.1),  ylim = c(0, 1), clip = "off")
+prob.group.p.full = prob.group.p +
+  ggtitle(str_wrap(gsub("\\n", " ", prob.group.p$labels$title), 50)) +
+  theme(axis.text.y = element_text(size = 6))
+prob.group.p.full
+```
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.group.p.half = prob.group.p +
+  guides(color = guide_legend(nrow = 3)) +
+  theme(legend.position = "bottom")
+prob.group.p.half
+```
+]
+
+--
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.group.p.half +
+  annotate("rect", xmin = 7.5, xmax = 8.5, ymin = 0.01, ymax = 0.99,
+           fill = NA, color = "red", size = 1)
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.group.p.half +
+  annotate("rect", xmin = 7.5, xmax = 8.5, ymin = 0.01, ymax = 0.99,
+           fill = NA, color = "red", size = 1)
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.group.p.half +
+  annotate("rect", xmin = 7.5, xmax = 8.5, ymin = 0.01, ymax = 0.99,
+           fill = NA, color = "red", size = 1)
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+
+  - Here, this is purely because of fish owners' lower baseline
+]
+
+---
+
+# Multiple baselines by group: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.group.p.half +
+  annotate("rect", xmin = 7.5, xmax = 8.5, ymin = 0.01, ymax = 0.99,
+           fill = NA, color = "red", size = 1)
+```
+]
+
+.pull-right[
+- Emphasizes that the baseline we show is a _choice_
+
+- Honors differences among groups
+
+  - Effect of GPA is larger for fish owners than for dog owners
+
+  - Here, this is purely because of fish owners' lower baseline
+
+  - But we could also show the effects of an interaction term in the model
+
+{{content}}
+]
+
+--
+
+- We can use arrows here as well
+
+---
+
+# Multiple baselines by group: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+prob.group.p.half
+```
+]
+
+--
+
+.pull-right[
+- Still have to choose baselines by group
+
+{{content}}
+]
+
+--
+
+- May suggest essentializing interpretations of groups
+
+{{content}}
+
+--
+
+- Cluttered
+
+---
+
+# Banana graphs
+
+- We can overcome the baseline-choosing problem by iterating across every baseline
+
+--
+
+- For example:
+
+--
+
+  - Start with every possible probability of passing Balloon Animal-Making 201, from 0% to 100% (at sufficiently small intervals)
+  
+--
+
+  - For each probability, add the effect of having a pet fish
+
+--
+
+$$p_f = \mbox{logit}^{-1}(\mbox{logit}(p_0) + \beta_f)$$
+ 
+---
+# Banana graphs
+
+```{r banana_graphs, include = F}
+knitr::read_chunk("visual_folder/banana_graphs.R")
+```
+
+```{r banana-graph, fig.show = "hide"}
+banana.p = banana.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off")
+```
+
+```{r out.width = "100%"}
+banana.p
+```
+
+---
+
+# Banana graphs
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+banana.p
+```
+]
+
+--
+
+.pull-right[
+- **x-axis:** baseline probability
+
+{{content}}
+]
+
+--
+
+- **y-axis:** probability with effect of having a pet fish
+
+{{content}}
+
+--
+
+- Solid line provides a reference (no effect)
+
+{{content}}
+
+--
+
+- Positive effects above the line; negative effects below the line; no effect on the line
+
+---
+# Banana graphs
+
+```{r out.width = "100%"}
+banana.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off") +
+  annotate("segment", x = 0.4, xend = 0.4, y = 0.4,
+           yend = invlogit(logit(0.4) +
+                             coefs.df$est[coefs.df$parameter == "pet.typefish"]),
+           color = "black", size = 0.5,
+           arrow = arrow(type = "closed", length = unit(0.02, units = "npc"))) +
+  annotate("text", x = 0.1, y = 0.7, size = 2.90, hjust = 0,
+           label = str_wrap(paste("Some student who does not own a pet fish has a 40% chance of passing (x-axis value).",
+                                  " However, if that same student did own a pet fish,",
+                                  " their predicted probability of passing would be ",
+                                  round(invlogit(logit(0.4) +
+                                                   coefs.df$est[coefs.df$parameter == "pet.typefish"]) * 100),
+                                  "% (y-axis value).",
+                                  sep = ""),
+                            30))
+```
+
+---
+
+# Banana graphs
+
+```{r banana-graph-multiple, fig.show = "hide"}
+```
+.center[
+```{r out.width = "100%", fig.width = 9}
+banana.multiple.p = banana.multiple.p +
+  coord_cartesian(xlim = c(0, 1),  ylim = c(0, 1), clip = "off") +
+  scale_fill_identity(guide = "legend", labels = c("Negative", "Not significant")) +
+  theme(legend.position = "right") +
+  labs(title ="Estimated relationship to probability of passing",
+       subtitle = "By pet type",
+       fill = "Relationship to\nprobability\nof passing")
+banana.multiple.p
+```
+]
+
+---
+
+# Banana graphs: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+banana.multiple.p
+```
+]
+
+--
+
+.pull-right[
+- Do not have to pick and choose a baseline
+
+{{content}}
+]
+
+--
+
+- Show the whole range of predicted probabilities
+
+---
+
+# Banana graphs: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+banana.multiple.p
+```
+]
+
+--
+
+.pull-right[
+- Can take up quite a bit of space
+
+{{content}}
+]
+
+--
+
+- May be initially difficult to understand
+
+{{content}}
+
+--
+
+- Predictor variables are in separate graphs: hard to compare
+
+---
+
+class: inverse, center, middle
+
+# Visualization family 3:
+
+# Counterfactual counts
+
+---
+
+# Extra successes
+
+- Sometimes stakeholders are interested in **the number of times something happens (or doesn't happen)**
+
+--
+
+- Example: stakeholders want to assess the impact of tutoring on pass rates in Balloon Animal-Making 201
+
+--
+
+  - They're interested not just in _whether_ tutoring helps students, but _how much_ it helps them
+
+--
+
+  - In our dataset, `r format(sum(df$tutoring), big.mark = ",")` students received tutoring; of those, `r format(sum(df$tutoring & df$passed), big.mark = ",")` passed the class
+
+--
+
+  - Suppose those students had _not_ received tutoring; in that case, how many would have passed? 
+
+--
+
+  - In other words, how many "extra" passes did we get because of tutoring?
+
+---
+
+# Extra successes
+
+- To get a point estimate:
+
+--
+
+  - Take all students who received tutoring
+
+--
+
+  - Set `tutoring` to `FALSE` instead of `TRUE`
+
+--
+
+  - Use the model to make (counterfactual) predictions for the revised dataset
+
+--
+
+  - Count predicted counterfactual passes; compare to the actual number of passes
+
+--
+
+- We can get confidence intervals by simulating many sets of outcomes and aggregating over them.
+
+---
+
+# Extra successes
+
+```{r counterfactuals, include = F}
+knitr::read_chunk("visual_folder/counterfactuals.R")
+```
+
+```{r extra-passes, fig.show = "hide"}
+```
+
+```{r extra_passes_plot, out.width = "100%"}
+extra.p
+```
+
+---
+
+# Extra successes: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+extra.p
+```
+]
+
+--
+
+.pull-right[
+- Counts have a straightforward interpretation
+
+{{content}}
+]
+
+--
+
+- Natural baseline: account for other characteristics of your population (e.g., number of fish owners)
+
+---
+
+# Extra successes: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+extra.p
+```
+]
+
+--
+
+.pull-right[
+- "Number of simulations" may be hard to explain
+
+{{content}}
+]
+
+--
+
+- Assumes that the counterfactual makes sense
+
+{{content}}
+
+--
+
+- Strong causal interpretation
+
+---
+
+# Extra successes by group
+
+- Your stakeholders may be interested in different effects by group
+
+--
+
+- We can summarize counterfactuals for separate groups
+ 
+---
+
+# Extra successes by group
+
+```{r extra-passes-by-group, fig.show = "hide"}
+```
+
+```{r out.width = "100%"}
+extra.group.p
+```
+
+---
+
+# Extra successes by group: Pros
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+extra.group.p
+```
+]
+
+--
+
+.pull-right[
+- Avoids a scale with number of simulations; focus is on range of predictions
+
+{{content}}
+]
+
+--
+
+- Shows differences by group
+
+{{content}}
+
+--
+
+- Interaction terms in the model would be incorporated automatically
+
+---
+
+# Extra successes by group: Cons
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+extra.group.p
+```
+]
+
+--
+
+.pull-right[
+- Doesn't show how absolute numbers depend on group size
+
+{{content}}
+]
+
+--
+
+- Tutoring actually has a _larger_ percentage point effect for fish owners (because of the lower baseline), but the group is small
+
+{{content}}
+
+--
+
+- (Your audience may care about counts, percentages, or both)
+
+---
+
+# Potential successes compared to group size
+
+- Attempt to show _both_ the effect size for each group _and_ the overall size of that group
+
+--
+
+- Here, we switch the direction of the counterfactual
+
+--
+
+  - Start with untutored students
+
+--
+
+  - How many would have passed with tutoring?
+
+--
+
+  - We think this emphasizes the benefits of tutoring more clearly in this graph
+
+--
+
+  - Either direction is possible; do what makes sense in your context!
+
+---
+
+# Potential successes compared to group size
+
+```{r potential-passes-by-group, fig.show = "hide"}
+```
+
+```{r out.width = "100%"}
+potential.group.p
+```
+
+---
+
+# Potential successes compared to group size
+
+.pull-left[
+```{r out.width = "100%", fig.width = 4.4, fig.asp = 1.3}
+potential.group.p.half = potential.group.p +
+  theme(legend.position = "bottom")
+potential.group.p.half
+```
+]
+
+--
+
+.pull-right[
+- Acknowledges different group sizes: puts absolute numbers in context
+
+{{content}}
+]
+
+--
+
+- But small groups are squished at the bottom of the scale (hard to see)
+
+---
+
+# Conclusion
+
+- There is no right or wrong way, only better and worse ways for a particular project, so get creative! 
+
+--
+
+- Knowing your stakeholders as well as the context and purpose of your research should be your guides to determine which visualization is most appropriate
+
+--
+
+- Use colors, the layout, and annotations to your advantage
+
+--
+
+- Share your ideas with others
+
+---
+
+class: inverse, center, middle
+
+# Thank you!
