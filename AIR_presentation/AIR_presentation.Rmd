@@ -56,20 +56,29 @@ class: inverse, center, middle
 # Logistic regression review
 
 ---
-
-# The design of logistic regression
+# Logistic regression: Binary outcomes
 
 - Use logistic regression to model a binary outcome
 
 --
 
-- Example from higher education:
+- Examples from higher education:
+
+--
+
+  - Did the student pass the class?
+
+--
+
+  - Did the student enroll for another term?
 
 --
 
   - Did the student graduate?
 
---
+
+---
+# The design of logistic regression
 
 - We want to model the probability that the outcome happened
 

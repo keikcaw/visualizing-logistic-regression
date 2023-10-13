@@ -3,12 +3,12 @@
   <head>
     <title>Visualizing logistic regression results for non-technical audiences</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Abby Kaplan and Keiko Cawley" />
+    <meta name="author" content="Abby Kaplan and Keiko Cawley Salt Lake Community College" />
     <meta name="date" content="2023-05-31" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <script src="libs/kePrint/kePrint.js"></script>
     <link href="libs/lightable/lightable.css" rel="stylesheet" />
-    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="xaringan-themer-air.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -18,7 +18,7 @@ class: center, middle, inverse, title-slide
 # Visualizing logistic regression results for non-technical audiences
 ]
 .author[
-### Abby Kaplan and Keiko Cawley
+### Abby Kaplan and Keiko Cawley<br/>Salt Lake Community College
 ]
 .institute[
 ### AIR Forum
@@ -75,8 +75,8 @@ class: inverse, center, middle
 
   - Did the student graduate?
 
----
 
+---
 # The design of logistic regression
 
 - We want to model the probability that the outcome happened
@@ -234,162 +234,6 @@ class: inverse, center, middle
 
 ---
 
-# Dataset
-
-
-
-&lt;table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;"&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:right;"&gt; id &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; mac &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; glasses &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; pet.type &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; favorite.color &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; prior.gpa &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; height &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; tutoring &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; passed &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.86 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 63 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; cat &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; green &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2.37 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 66 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; none &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; orange &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 66 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.78 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 68 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; cat &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; blue &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.73 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 67 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; green &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.99 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 61 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; none &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.75 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 62 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.73 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 61 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 9 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; none &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 64 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; orange &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.64 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 62 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 11 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; dog &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; red &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 63 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 12 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; cat &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; green &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.72 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 64 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
----
-
 # Model
 
 - Dependent variable: did the student pass?
@@ -400,9 +244,17 @@ class: inverse, center, middle
 
 
 
+
+
+--
+
 - Reference levels for categorical variables:
 
+--
+
   - Pet type: none
+
+--
 
   - Favorite color: blue
 
@@ -468,28 +320,17 @@ class: inverse, center, middle
 
 ---
 
-# Color palette
-
-
-
-
-
-
-
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-5-1.png" width="70%" style="display: block; margin: auto;" /&gt;
-
----
-
 class: inverse, center, middle
 
 # Visualization family 1:
 
 # Presenting model coefficients
 
-
 ---
 
 # Coefficients in a table
+
+
 
 &lt;table class="table table-striped table-hover" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;"&gt;
  &lt;thead&gt;
@@ -605,6 +446,10 @@ class: inverse, center, middle
 
 
 
+
+
+
+
 &lt;img src="AIR_presentation_files/figure-html/change_in_log_odds_plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
@@ -612,7 +457,7 @@ class: inverse, center, middle
 # Change in log odds: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -632,7 +477,7 @@ class: inverse, center, middle
 # Change in log odds: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -648,7 +493,7 @@ class: inverse, center, middle
 # Change in log odds: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -656,7 +501,7 @@ class: inverse, center, middle
 # Change in log odds: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -694,7 +539,7 @@ class: inverse, center, middle
 # Secret log odds: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-10-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -702,7 +547,7 @@ class: inverse, center, middle
 # Secret log odds: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -722,7 +567,7 @@ class: inverse, center, middle
 # Secret log odds: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-12-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -781,14 +626,14 @@ layout: false
 
 
 
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Change in odds ratio: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-14-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -808,7 +653,7 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -822,7 +667,7 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-16-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -836,7 +681,7 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-18-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-17-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -858,7 +703,7 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-18-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -878,7 +723,7 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-20-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -900,11 +745,11 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-21-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-20-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-22-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-21-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -912,11 +757,11 @@ layout: false
 # Change in odds ratio: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-23-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-22-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-24-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-23-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 - The scale is expanded for positive effects and compressed for negative effects
@@ -973,26 +818,6 @@ class: inverse, center, middle
 
 `$$p_i = \mbox{logit}^{-1}(\beta_0 + \beta_i)$$`
 
---
-
-- For a continuous predictor `\(j\)`, pick a change in predictor value that makes sense
-
---
-
-  - One standard deviation
-
---
-
-  - A context-specific benchmark (e.g., 1 point for GPA, 100 points on the SAT)
-
---
-
-`$$p_j = \mbox{logit}^{-1}(\beta_0 + \beta_j\Delta x_j)$$`
-
---
-
-- To show uncertainty, get confidence interval before inverse logit transformation
-
 ---
 
 # Probabilities relative to a baseline
@@ -1010,7 +835,7 @@ class: inverse, center, middle
 # Probabilities relative to a baseline: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-25-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-24-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1030,7 +855,7 @@ class: inverse, center, middle
 # Probabilities relative to a baseline: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-26-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-25-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1050,7 +875,7 @@ class: inverse, center, middle
 # Probabilities relative to a baseline: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-27-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-26-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1066,7 +891,7 @@ class: inverse, center, middle
 # Probabilities relative to a baseline: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-28-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-27-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1087,58 +912,6 @@ class: inverse, center, middle
 
 ---
 
-# Probabilities relative to a baseline: Arrows
-
-
-
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-29-1.png" width="100%" style="display: block; margin: auto;" /&gt;
-
----
-
-# Probabilities relative to a baseline: Arrows
-
-.pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-30-1.png" width="100%" style="display: block; margin: auto;" /&gt;
-]
-
---
-
-.pull-right[
-- Emphasizes  direction of effect
-
-{{content}}
-]
-
---
-
-- Doesn't show uncertainty around estimates
-
-{{content}}
-
---
-
-- Strong causal implications
-
----
-
-# Multiple baselines by group
-
-- Instead of one baseline probability, why not several?
-
---
-
-- Example: show effect of `\(i\)` for each level of categorical variable `\(j\)`
-
---
-
-`$$p_{j1} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1})$$`
-
---
-
-`$$p_{j1 + i} = \mbox{logit}^{-1}(\beta_0 + \beta_{j1} + \beta_i)$$`
-
----
-
 # Multiple baselines by group
 
 
@@ -1152,7 +925,7 @@ class: inverse, center, middle
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-28-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1166,7 +939,7 @@ class: inverse, center, middle
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-29-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1180,7 +953,7 @@ class: inverse, center, middle
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-30-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1196,7 +969,7 @@ class: inverse, center, middle
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-31-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1214,7 +987,7 @@ class: inverse, center, middle
 # Multiple baselines by group: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-32-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -1231,16 +1004,12 @@ class: inverse, center, middle
 {{content}}
 ]
 
---
-
-- We can use arrows here as well
-
 ---
 
 # Multiple baselines by group: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-36-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-33-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1290,14 +1059,14 @@ class: inverse, center, middle
 
 
 
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-37-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-34-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Banana graphs
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-38-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-35-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1327,22 +1096,23 @@ class: inverse, center, middle
 ---
 # Banana graphs
 
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-39-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-36-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Banana graphs
 
 
-
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-40-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+.center[
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-37-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 
 # Banana graphs: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-41-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-38-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1362,7 +1132,7 @@ class: inverse, center, middle
 # Banana graphs: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-42-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-39-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1458,7 +1228,7 @@ class: inverse, center, middle
 # Extra successes: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-43-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-40-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1478,7 +1248,7 @@ class: inverse, center, middle
 # Extra successes: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-44-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-41-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1515,14 +1285,14 @@ class: inverse, center, middle
 
 
 
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-45-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-42-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Extra successes by group: Pros
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-46-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-43-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1548,7 +1318,7 @@ class: inverse, center, middle
 # Extra successes by group: Cons
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-47-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-44-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
@@ -1573,42 +1343,16 @@ class: inverse, center, middle
 
 # Potential successes compared to group size
 
-- Attempt to show _both_ the effect size for each group _and_ the overall size of that group
-
---
-
-- Here, we switch the direction of the counterfactual
-
---
-
-  - Start with untutored students
-
---
-
-  - How many would have passed with tutoring?
-
---
-
-  - We think this emphasizes the benefits of tutoring more clearly in this graph
-
---
-
-  - Either direction is possible; do what makes sense in your context!
-
----
-
-# Potential successes compared to group size
 
 
-
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-48-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-45-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # Potential successes compared to group size
 
 .pull-left[
-&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-49-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="AIR_presentation_files/figure-html/unnamed-chunk-46-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
 --
