@@ -12,3 +12,5 @@ Communicating the results of a logistic regression to a non-technical audience c
 * The [link](https://www.youtube.com/watch?v=svHT7H1ZykA) to watch our Salt Lake R Users Group presentation on YouTube.
 
 * A copy of the [slides](https://keikcaw.github.io/visualizing-logistic-regression/AIR_presentation.html#1) we used during our presentation at AIR Forum on June 2, 2023.
+
+* A copy of the [slides](https://keikcaw.github.io/visualizing-logistic-regression/RMAIR_presentation.html#1) we used during our presentation at RMAIR on October 17, 2023.
